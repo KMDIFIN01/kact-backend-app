@@ -26,28 +26,32 @@ export const registerValidator = [
     .matches(/^\+?[1-9]\d{1,14}$/)
     .withMessage('Please provide a valid phone number'),
   body('address1')
-    .optional()
     .trim()
-    .isLength({ max: 200 })
-    .withMessage('Address line 1 must be less than 200 characters'),
+    .notEmpty()
+    .withMessage('Address line 1 is required')
+    .isLength({ min: 2, max: 200 })
+    .withMessage('Address line 1 must be between 2 and 200 characters'),
   body('address2')
     .optional()
     .trim()
     .isLength({ max: 200 })
     .withMessage('Address line 2 must be less than 200 characters'),
   body('city')
-    .optional()
     .trim()
-    .isLength({ max: 100 })
-    .withMessage('City must be less than 100 characters'),
+    .notEmpty()
+    .withMessage('City is required')
+    .isLength({ min: 2, max: 100 })
+    .withMessage('City must be between 2 and 100 characters'),
   body('state')
-    .optional()
     .trim()
+    .notEmpty()
+    .withMessage('State is required')
     .isLength({ min: 2, max: 50 })
     .withMessage('State must be between 2 and 50 characters'),
   body('zip')
-    .optional()
     .trim()
+    .notEmpty()
+    .withMessage('ZIP code is required')
     .matches(/^\d{5}(-\d{4})?$/)
     .withMessage('Please provide a valid ZIP code'),
 ];

@@ -15,11 +15,11 @@ model User {
   lastName                String?        @map("last_name")
   name                    String?
   phone                   String?
-  address1                String?
-  address2                String?
-  city                    String?
-  state                   String?
-  zip                     String?
+  address1                String         @map("address_1")
+  address2                String?        @map("address_2")
+  city                    String
+  state                   String
+  zip                     String
   emailVerified           Boolean        @default(false) @map("email_verified")
   emailVerificationToken  String?        @unique @map("email_verification_token")
   emailVerificationExpiry DateTime?      @map("email_verification_expiry")

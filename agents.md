@@ -76,11 +76,11 @@ model User {
   lastName                  String?
   name                      String?
   phone                     String?
-  address1                  String?
+  address1                  String
   address2                  String?
-  city                      String?
-  state                     String?
-  zip                       String?
+  city                      String
+  state                     String
+  zip                       String
   
   // Email verification
   emailVerified             Boolean   @default(false)
@@ -135,11 +135,11 @@ Content-Type: application/json
   "firstName": "John",
   "lastName": "Doe",
   "phone": "+1234567890",      // Optional
-  "address1": "123 Main St",   // Optional
+  "address1": "123 Main St",   // REQUIRED
   "address2": "Apt 4B",        // Optional
-  "city": "New York",          // Optional
-  "state": "NY",               // Optional
-  "zip": "10001"               // Optional
+  "city": "New York",          // REQUIRED
+  "state": "NY",               // REQUIRED
+  "zip": "10001"               // REQUIRED
 }
 
 Response (201):
@@ -546,7 +546,11 @@ curl -X POST http://localhost:5000/api/v1/auth/register \
     "password": "SecurePass123!",
     "confirmPassword": "SecurePass123!",
     "firstName": "Test",
-    "lastName": "User"
+    "lastName": "User",
+    "address1": "123 Main St",
+    "city": "New York",
+    "state": "NY",
+    "zip": "10001"
   }'
 ```
 
