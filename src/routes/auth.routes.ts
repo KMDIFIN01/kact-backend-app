@@ -3,6 +3,7 @@ import { AuthController } from '@controllers/auth.controller';
 import { authenticate } from '@middlewares/auth.middleware';
 import { validate } from '@middlewares/validate.middleware';
 import { authLimiter, emailLimiter } from '@middlewares/rateLimiter.middleware';
+import { doubleCsrfProtection } from '@middlewares/csrf.middleware';
 import {
   registerValidator,
   loginValidator,
@@ -51,7 +52,7 @@ router.post('/logout', authenticate, authController.logout);
  * @desc    Refresh access token
  * @access  Public
  */
-router.post('/refresh', authController.refreshToken);
+router.post('/refresh', doubleCsrfProtection, authController.refreshToken);
 
 /**
  * @route   GET /api/v1/auth/verify-email/:token
