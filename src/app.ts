@@ -7,7 +7,6 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import { corsConfig } from '@config/cors';
 import { generalLimiter } from '@middlewares/rateLimiter.middleware';
-import { csrfTokenHandler, doubleCsrfProtection } from '@middlewares/csrf.middleware';
 import { errorHandler, notFoundHandler } from '@middlewares/error.middleware';
 import routes from './routes/index';
 
