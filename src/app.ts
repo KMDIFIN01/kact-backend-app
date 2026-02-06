@@ -48,6 +48,9 @@ const swaggerOptions = {
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
+// Trust proxy (required for rate limiting and IP detection behind proxies)
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet());
 app.use(cors(corsConfig)); // This should come EARLY
