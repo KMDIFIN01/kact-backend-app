@@ -22,8 +22,8 @@ export const registerValidator = [
     .isLength({ min: 2, max: 50 })
     .withMessage('Last name must be between 2 and 50 characters'),
   body('phone')
-    .optional()
-    .matches(/^\+?[1-9]\d{1,14}$/)
+    .optional({ checkFalsy: true })
+    .matches(/^[+]?([0-9\s().-]){7,20}$/)
     .withMessage('Please provide a valid phone number'),
   body('address1')
     .trim()
