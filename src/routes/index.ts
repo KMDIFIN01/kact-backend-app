@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import authRoutes from './auth.routes';
-import { getCsrfToken } from '@middlewares/csrf.middleware';
+import { getCsrfToken, csrfTokenHandler, doubleCsrfProtection } from '@middlewares/csrf.middleware';
 
 const router = Router();
 
@@ -14,8 +14,11 @@ router.get('/health', (_req, res) => {
   });
 });
 
-// CSRF token endpoint
-router.get('/csrf-token', getCsrfToken);
+// CSRF token endpoint (must come BEFORE CSRF protection middleware)
+router.get('/csrf-token', csrfTokenHandler, getCsrfToken);
+
+// Apply CSRF protection to all routes after this point
+router.use(doubleCsrfProtection);
 
 // API routes
 router.use('/auth', authRoutes);

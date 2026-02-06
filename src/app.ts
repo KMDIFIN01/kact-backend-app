@@ -70,10 +70,6 @@ if (process.env.NODE_ENV === 'development') {
 // Rate limiting
 app.use('/api', generalLimiter);
 
-// CSRF protection
-app.use(csrfTokenHandler);
-app.use(doubleCsrfProtection);
-
 // API Documentation
 if (process.env.NODE_ENV === 'development') {
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
