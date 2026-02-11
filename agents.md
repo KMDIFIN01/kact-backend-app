@@ -306,6 +306,30 @@ Response (200):
 Set-Cookie: refreshToken=; HttpOnly; Secure; SameSite=Strict; Max-Age=0
 ```
 
+#### 10. Get All Users (Except Admin)
+```http
+GET /api/v1/users
+Authorization: Bearer {accessToken}
+Response (200):
+{
+  "success": true,
+  "message": "Users retrieved successfully",
+  "data": {
+    "users": [
+      {
+        "id": "clxxx...",
+        "email": ",
+        "name": "John Doe",
+        "emailVerified": true,
+        "createdAt": "2026-02-01T12:00:00.000Z",
+      },
+
+
+      // More users...
+    ]
+  }
+}
+
 ### Utility Routes
 
 #### Get CSRF Token
