@@ -28,11 +28,27 @@ model User {
   createdAt               DateTime       @default(now()) @map("created_at")
   updatedAt               DateTime       @updatedAt @map("updated_at")
   refreshTokens           RefreshToken[]
+  galleryPhotos           GalleryPhoto[]
 
   @@index([email])
   @@index([emailVerificationToken])
   @@index([passwordResetToken])
   @@map("users")
+}
+
+model GalleryPhoto {
+  id         String   @id @default(cuid())
+  eventId    String   @map("event_id")
+  year       Int
+  photoUrl   String   @map("photo_url")
+  title      String?
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, year])
+  @@index([userId])
+  @@map("gallery_photos")
 }
 
 model RefreshToken {

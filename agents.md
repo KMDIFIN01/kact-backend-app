@@ -27,24 +27,30 @@ backend/
 │   │   ├── jwt.ts              # JWT & bcrypt config
 │   │   ├── cors.ts             # CORS configuration
 │   │   └── email.ts            # Resend email config
+│   │   └── cloudinary.ts      # Cloudinary config
 │   ├── controllers/
 │   │   ├── auth.controller.ts  # Authentication endpoints
 │   │   └── user.controller.ts  # User management
+│   │   └── gallery.controller.ts # Gallery endpoints
 │   ├── services/
 │   │   ├── auth.service.ts     # Auth business logic
 │   │   ├── token.service.ts    # JWT operations
 │   │   └── email.service.ts    # Email sending
+│   │   └── gallery.service.ts # Gallery business logic
 │   ├── middlewares/
 │   │   ├── auth.middleware.ts  # JWT authentication
 │   │   ├── error.middleware.ts # Error handling
 │   │   ├── validate.middleware.ts # Request validation
 │   │   ├── rateLimiter.middleware.ts # Rate limiting
 │   │   └── csrf.middleware.ts  # CSRF protection
+│   │   └── upload.middleware.ts # Multer upload config
 │   ├── routes/
 │   │   ├── auth.routes.ts      # Auth routes
 │   │   └── index.ts            # Route aggregation
+│   │   └── gallery.routes.ts  # Gallery routes
 │   ├── validators/
 │   │   └── auth.validator.ts   # Input validators
+│   │   └── gallery.validator.ts # Gallery input validators
 │   ├── types/
 │   │   ├── api.ts              # API type definitions
 │   │   └── express.d.ts        # Express extensions
@@ -76,6 +82,22 @@ model User {
   lastName                  String?
   name                      String?
   phone                     String?
+### GalleryPhoto Model
+```prisma
+model GalleryPhoto {
+  id         String   @id @default(cuid())
+  eventId    String   @map("event_id")
+  year       Int
+  photoUrl   String   @map("photo_url")
+  title      String?
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, year])
+  @@index([userId])
+  @@map("gallery_photos")
+}
   address1                  String
   address2                  String?
   city                      String
@@ -118,11 +140,69 @@ model RefreshToken {
 ## API Endpoints
 
 ### Base URL
-- Development: `http://localhost:5000/api/v1`
-- Production: `https://your-domain.com/api/v1`
 
 ### Authentication Routes (`/auth`)
 
+### Gallery Routes (`/gallery`)
+
+#### Upload Photos
+```http
+POST /api/v1/gallery/upload
+Authorization: Bearer {accessToken}
+Content-Type: multipart/form-data
+
+Form fields:
+  eventId: string (required)
+  year: number (required)
+  title: string (optional)
+  photos: array of image files (required)
+
+Response (201):
+{
+  "success": true,
+  "message": "Photos uploaded successfully",
+  "data": {
+    "photos": [
+      {
+        "id": "clxxx...",
+        "eventId": "event123",
+        "year": 2026,
+        "photoUrl": "https://res.cloudinary.com/...",
+        "title": "My Photo",
+        "uploadedAt": "2026-02-12T12:00:00.000Z",
+        "userId": "clxxx..."
+      }
+      // More photos...
+    ]
+  }
+}
+```
+
+#### Get Photos by Event & Year
+```http
+GET /api/v1/gallery/:eventId/:year
+Authorization: Bearer {accessToken}
+
+Response (200):
+{
+  "success": true,
+  "message": "Photos retrieved successfully",
+  "data": {
+    "photos": [
+      {
+        "id": "clxxx...",
+        "eventId": "event123",
+        "year": 2026,
+        "photoUrl": "https://res.cloudinary.com/...",
+        "title": "My Photo",
+        "uploadedAt": "2026-02-12T12:00:00.000Z",
+        "userId": "clxxx..."
+      }
+      // More photos...
+    ]
+  }
+}
+```
 #### 1. Register
 ```http
 POST /api/v1/auth/register
