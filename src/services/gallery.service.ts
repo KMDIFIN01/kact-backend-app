@@ -48,10 +48,10 @@ export class GalleryService {
     return uploads;
   }
 
-  async getPhotosByEventYear(id: string, year: number) {
+  async getPhotosByEventYear(eventId: string, year: number) {
     return prisma.galleryPhoto.findMany({
       where: {
-        id,
+        eventId,
         year,
       },
       orderBy: { uploadedAt: 'desc' },
