@@ -7,6 +7,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
+enum MembershipType {
+  LIFETIME
+  FAMILY
+  INDIVIDUAL
+  STUDENT
+  DECADE
+}
+
+enum PaymentType {
+  ZIFFY
+  CASH
+}
+
+enum MembershipStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
 model User {
   id                      String         @id @default(cuid())
   email                   String         @unique
@@ -20,6 +45,7 @@ model User {
   city                    String
   state                   String
   zip                     String
+  role                    Role           @default(USER)
   emailVerified           Boolean        @default(false) @map("email_verified")
   emailVerificationToken  String?        @unique @map("email_verification_token")
   emailVerificationExpiry DateTime?      @map("email_verification_expiry")
@@ -29,10 +55,12 @@ model User {
   updatedAt               DateTime       @updatedAt @map("updated_at")
   refreshTokens           RefreshToken[]
   galleryPhotos           GalleryPhoto[]
+  memberships             Membership[]
 
   @@index([email])
   @@index([emailVerificationToken])
   @@index([passwordResetToken])
+  @@index([role])
   @@map("users")
 }
 
@@ -62,4 +90,33 @@ model RefreshToken {
   @@index([userId])
   @@index([token])
   @@map("refresh_tokens")
+}
+
+model Membership {
+  id               String           @id @default(cuid())
+  firstName        String           @map("first_name")
+  lastName         String           @map("last_name")
+  email            String
+  phoneNumber      String           @map("phone_number")
+  address1         String           @map("address_1")
+  address2         String?          @map("address_2")
+  city             String
+  state            String
+  zip              String
+  membershipType   MembershipType   @map("membership_type")
+  paymentType      PaymentType      @map("payment_type")
+  membershipStatus MembershipStatus @default(PENDING) @map("membership_status")
+  applicationDate  DateTime         @default(now()) @map("application_date")
+  approvedDate     DateTime?        @map("approved_date")
+  approvedBy       String?          @map("approved_by")
+  approvedByUser   User?            @relation(fields: [approvedBy], references: [id], onDelete: SetNull)
+  notes            String?
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  @@index([membershipStatus])
+  @@index([membershipType])
+  @@index([applicationDate])
+  @@index([approvedBy])
+  @@map("memberships")
 }

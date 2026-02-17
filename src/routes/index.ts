@@ -2,6 +2,7 @@ import { Router } from 'express';
 import authRoutes from './auth.routes';
 import userRoutes from './user.routes';
 import galleryRoutes from './gallery.routes';
+import membershipRoutes from './membership.routes';
 import { getCsrfToken, csrfTokenHandler } from '@middlewares/csrf.middleware';
 
 const router = Router();
@@ -23,5 +24,6 @@ router.get('/csrf-token', csrfTokenHandler, getCsrfToken);
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/gallery', galleryRoutes);
+router.use('/membership', membershipRoutes);
 
 export default router;

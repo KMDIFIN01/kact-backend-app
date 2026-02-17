@@ -25,6 +25,7 @@ export interface User {
   id: string;
   email: string;
   name: string | null;
+  role: 'USER' | 'ADMIN';
   emailVerified: boolean;
   createdAt: Date;
 }
@@ -32,4 +33,46 @@ export interface User {
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
+}
+
+export enum MembershipType {
+  LIFETIME = 'LIFETIME',
+  FAMILY = 'FAMILY',
+  INDIVIDUAL = 'INDIVIDUAL',
+  STUDENT = 'STUDENT',
+  DECADE = 'DECADE',
+}
+
+export enum PaymentType {
+  ZIFFY = 'ZIFFY',
+  CASH = 'CASH',
+}
+
+export enum MembershipStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  EXPIRED = 'EXPIRED',
+}
+
+export interface Membership {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  address1: string;
+  address2: string | null;
+  city: string;
+  state: string;
+  zip: string;
+  membershipType: MembershipType;
+  paymentType: PaymentType;
+  membershipStatus: MembershipStatus;
+  applicationDate: Date;
+  approvedDate: Date | null;
+  approvedBy: string | null;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }

@@ -30,27 +30,32 @@ backend/
 │   │   └── cloudinary.ts      # Cloudinary config
 │   ├── controllers/
 │   │   ├── auth.controller.ts  # Authentication endpoints
-│   │   └── user.controller.ts  # User management
-│   │   └── gallery.controller.ts # Gallery endpoints
+│   │   ├── user.controller.ts  # User management
+│   │   ├── gallery.controller.ts # Gallery endpoints
+│   │   └── membership.controller.ts # Membership endpoints
 │   ├── services/
 │   │   ├── auth.service.ts     # Auth business logic
 │   │   ├── token.service.ts    # JWT operations
-│   │   └── email.service.ts    # Email sending
-│   │   └── gallery.service.ts # Gallery business logic
+│   │   ├── email.service.ts    # Email sending
+│   │   ├── gallery.service.ts  # Gallery business logic
+│   │   └── membership.service.ts # Membership business logic
 │   ├── middlewares/
 │   │   ├── auth.middleware.ts  # JWT authentication
+│   │   ├── admin.middleware.ts # Admin authorization
 │   │   ├── error.middleware.ts # Error handling
 │   │   ├── validate.middleware.ts # Request validation
 │   │   ├── rateLimiter.middleware.ts # Rate limiting
-│   │   └── csrf.middleware.ts  # CSRF protection
+│   │   ├── csrf.middleware.ts  # CSRF protection
 │   │   └── upload.middleware.ts # Multer upload config
 │   ├── routes/
 │   │   ├── auth.routes.ts      # Auth routes
+│   │   ├── gallery.routes.ts   # Gallery routes
+│   │   ├── membership.routes.ts # Membership routes
 │   │   └── index.ts            # Route aggregation
-│   │   └── gallery.routes.ts  # Gallery routes
 │   ├── validators/
-│   │   └── auth.validator.ts   # Input validators
-│   │   └── gallery.validator.ts # Gallery input validators
+│   │   ├── auth.validator.ts   # Input validators
+│   │   ├── gallery.validator.ts # Gallery input validators
+│   │   └── membership.validator.ts # Membership input validators
 │   ├── types/
 │   │   ├── api.ts              # API type definitions
 │   │   └── express.d.ts        # Express extensions
@@ -72,16 +77,77 @@ backend/
 
 ## Database Schema
 
+### Enums
+```prisma
+enum Role {
+  USER
+  ADMIN
+}
+
+enum MembershipType {
+  LIFETIME
+  FAMILY
+  INDIVIDUAL
+  STUDENT
+  DECADE
+}
+
+enum PaymentType {
+  ZIFFY
+  CASH
+}
+
+enum MembershipStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+```
+
 ### User Model
 ```prisma
 model User {
-  id                        String    @id @default(cuid())
-  email                     String    @unique
-  password                  String
-  firstName                 String?
-  lastName                  String?
+  id                        String         @id @default(cuid())
+  email                     String         @unique
+  password                  String         @map("password_hash")
+  firstName                 String?        @map("first_name")
+  lastName                  String?        @map("last_name")
   name                      String?
   phone                     String?
+  address1                  String         @map("address_1")
+  address2                  String?        @map("address_2")
+  city                      String
+  state                     String
+  zip                       String
+  role                      Role           @default(USER)
+  
+  // Email verification
+  emailVerified             Boolean        @default(false) @map("email_verified")
+  emailVerificationToken    String?        @unique @map("email_verification_token")
+  emailVerificationExpiry   DateTime?      @map("email_verification_expiry")
+  
+  // Password reset
+  passwordResetToken        String?        @unique @map("password_reset_token")
+  passwordResetExpiry       DateTime?      @map("password_reset_expiry")
+  
+  // Timestamps
+  createdAt                 DateTime       @default(now()) @map("created_at")
+  updatedAt                 DateTime       @updatedAt @map("updated_at")
+  
+  // Relationships
+  refreshTokens             RefreshToken[]
+  galleryPhotos             GalleryPhoto[]
+  memberships               Membership[]
+  
+  @@index([email])
+  @@index([emailVerificationToken])
+  @@index([passwordResetToken])
+  @@index([role])
+  @@map("users")
+}
+```
+
 ### GalleryPhoto Model
 ```prisma
 model GalleryPhoto {
@@ -98,42 +164,53 @@ model GalleryPhoto {
   @@index([userId])
   @@map("gallery_photos")
 }
-  address1                  String
-  address2                  String?
-  city                      String
-  state                     String
-  zip                       String
-  
-  // Email verification
-  emailVerified             Boolean   @default(false)
-  emailVerificationToken    String?   @unique
-  emailVerificationExpiry   DateTime?
-  
-  // Password reset
-  passwordResetToken        String?   @unique
-  passwordResetExpiry       DateTime?
-  
-  // Relationships
-  refreshTokens             RefreshToken[]
-  
-  createdAt                 DateTime  @default(now())
-  updatedAt                 DateTime  @updatedAt
-  
-  @@index([email])
-  @@index([emailVerificationToken])
-  @@index([passwordResetToken])
-}
+```
 
+### RefreshToken Model
+```prisma
 model RefreshToken {
   id        String   @id @default(cuid())
   token     String   @unique
-  userId    String
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  expiresAt DateTime
-  createdAt DateTime @default(now())
   
   @@index([userId])
   @@index([token])
+  @@map("refresh_tokens")
+}
+```
+
+### Membership Model
+```prisma
+model Membership {
+  id               String           @id @default(cuid())
+  firstName        String           @map("first_name")
+  lastName         String           @map("last_name")
+  email            String
+  phoneNumber      String           @map("phone_number")
+  address1         String           @map("address_1")
+  address2         String?          @map("address_2")
+  city             String
+  state            String
+  zip              String
+  membershipType   MembershipType   @map("membership_type")
+  paymentType      PaymentType      @map("payment_type")
+  membershipStatus MembershipStatus @default(PENDING) @map("membership_status")
+  applicationDate  DateTime         @default(now()) @map("application_date")
+  approvedDate     DateTime?        @map("approved_date")
+  approvedBy       String?          @map("approved_by")
+  approvedByUser   User?            @relation(fields: [approvedBy], references: [id], onDelete: SetNull)
+  notes            String?
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  @@index([membershipStatus])
+  @@index([membershipType])
+  @@index([applicationDate])
+  @@index([approvedBy])
+  @@map("memberships")
 }
 ```
 
@@ -203,6 +280,138 @@ Response (200):
   }
 }
 ```
+
+### Membership Routes (`/membership`)
+
+#### Create Membership Application
+```http
+POST /api/v1/membership
+Content-Type: application/json
+
+Note: This is a public endpoint - no authentication required. 
+Anyone can submit a membership application.
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john@example.com",
+  "phoneNumber": "+1234567890",
+  "address1": "123 Main St",
+  "address2": "Apt 4B",
+  "city": "New York",
+  "state": "NY",
+  "zip": "10001",
+  "membershipType": "INDIVIDUAL",
+  "paymentType": "CASH",
+  "notes": "Additional notes"
+}
+
+Response (201):
+{
+  "success": true,
+  "message": "Membership application created successfully",
+  "data": {
+    "membership": {
+      "id": "clxxx...",
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john@example.com",
+      "phoneNumber": "+1234567890",
+      "address1": "123 Main St",
+      "address2": "Apt 4B",
+      "city": "New York",
+      "state": "NY",
+      "zip": "10001",
+      "membershipType": "INDIVIDUAL",
+      "paymentType": "CASH",
+      "membershipStatus": "PENDING",
+      "applicationDate": "2026-02-17T03:33:23.000Z",
+      "approvedDate": null,
+      "approvedBy": null,
+      "notes": "Additional notes",
+      "createdAt": "2026-02-17T03:33:23.000Z",
+      "updatedAt": "2026-02-17T03:33:23.000Z"
+    }
+  }
+}
+```
+
+#### Get All Memberships
+```http
+GET /api/v1/membership
+Authorization: Bearer {adminAccessToken}
+
+Response (200):
+{
+  "success": true,
+  "message": "Memberships retrieved successfully",
+  "data": {
+    "memberships": [
+      {
+        "id": "clxxx...",
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john@example.com",
+        "phoneNumber": "+1234567890",
+        "address1": "123 Main St",
+        "address2": "Apt 4B",
+        "city": "New York",
+        "state": "NY",
+        "zip": "10001",
+        "membershipType": "INDIVIDUAL",
+        "membershipStatus": "PENDING",
+        "applicationDate": "2026-02-17T03:33:23.000Z",
+        "approvedDate": null,
+        "notes": "Additional notes",
+        "approvedByUser": null
+      }
+      // More memberships...
+    ]
+  }
+}
+```
+
+#### Update Membership Status
+```http
+PATCH /api/v1/membership/:id/status
+Authorization: Bearer {adminAccessToken}
+Content-Type: application/json
+
+{
+  "membershipStatus": "APPROVED"
+}
+
+Response (200):
+{
+  "success": true,
+  "message": "Membership status updated successfully",
+  "data": {
+    "membership": {
+      "id": "clxxx...",
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john@example.com",
+      "phoneNumber": "+1234567890",
+      "address1": "123 Main St",
+      "address2": "Apt 4B",
+      "city": "New York",
+      "state": "NY",
+      "zip": "10001",
+      "membershipType": "INDIVIDUAL",
+      "membershipStatus": "APPROVED",
+      "applicationDate": "2026-02-17T03:33:23.000Z",
+      "approvedDate": "2026-02-17T03:40:15.000Z",
+      "notes": "Additional notes",
+      "approvedByUser": {
+        "id": "clyyy...",
+        "name": "Admin User",
+        "email": "admin@example.com"
+      }
+    }
+  }
+}
+```
+
 #### 1. Register
 ```http
 POST /api/v1/auth/register
