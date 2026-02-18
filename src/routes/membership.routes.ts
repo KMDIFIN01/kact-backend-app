@@ -41,19 +41,6 @@ router.get(
   membershipController.getAll);
 
 /**
- * @route   PATCH /api/v1/membership/:id/status
- * @desc    Update membership status (approve/reject/expire)
- * @access  Private (Admin only)
- */
-router.patch(
-  '/:id/status',
-  authenticate,
-  requireAdmin,
-  validate(updateMembershipStatusValidator),
-  membershipController.updateStatus
-);
-
-/**
  * @route   PATCH /api/v1/membership/bulk/status
  * @desc    Bulk update membership status for multiple memberships
  * @access  Private (Admin only)
@@ -64,6 +51,19 @@ router.patch(
   requireAdmin,
   validate(bulkUpdateStatusValidator),
   membershipController.bulkUpdateStatus
+);
+
+/**
+ * @route   PATCH /api/v1/membership/:id/status
+ * @desc    Update membership status (approve/reject/expire)
+ * @access  Private (Admin only)
+ */
+router.patch(
+  '/:id/status',
+  authenticate,
+  requireAdmin,
+  validate(updateMembershipStatusValidator),
+  membershipController.updateStatus
 );
 
 /**
