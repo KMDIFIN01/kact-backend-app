@@ -120,3 +120,18 @@ model Membership {
   @@index([approvedBy])
   @@map("memberships")
 }
+
+model Event {
+  id            String   @id @default(cuid())
+  programmeName String   @map("programme_name")
+  programmeType String   @map("programme_type")
+  date          String
+  time          String?
+  location      String?
+  comments      String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([date])
+  @@map("events")
+}

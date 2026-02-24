@@ -3,6 +3,7 @@ import authRoutes from './auth.routes';
 import userRoutes from './user.routes';
 import galleryRoutes from './gallery.routes';
 import membershipRoutes from './membership.routes';
+import eventRoutes from './event.routes';
 import { getCsrfToken, csrfTokenHandler } from '@middlewares/csrf.middleware';
 
 const router = Router();
@@ -25,5 +26,6 @@ router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/gallery', galleryRoutes);
 router.use('/membership', membershipRoutes);
+router.use('/events', eventRoutes);
 
 export default router;
