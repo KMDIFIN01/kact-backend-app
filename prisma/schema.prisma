@@ -32,6 +32,13 @@ enum MembershipStatus {
   EXPIRED
 }
 
+enum SponsorshipStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
 model User {
   id                      String         @id @default(cuid())
   email                   String         @unique
@@ -56,6 +63,7 @@ model User {
   refreshTokens           RefreshToken[]
   galleryPhotos           GalleryPhoto[]
   memberships             Membership[]
+  sponsorships            Sponsorship[]
 
   @@index([email])
   @@index([emailVerificationToken])
@@ -134,4 +142,36 @@ model Event {
 
   @@index([date])
   @@map("events")
+}
+
+model Sponsorship {
+  id                String            @id @default(cuid())
+  businessName      String            @map("business_name")
+  businessType      String            @map("business_type")
+  websiteUrl        String?           @map("website_url")
+  firstName         String            @map("first_name")
+  lastName          String            @map("last_name")
+  email             String
+  phoneNumber       String            @map("phone_number")
+  address1          String            @map("address_1")
+  address2          String?           @map("address_2")
+  city              String
+  state             String
+  zip               String
+  sponsorshipType   String            @map("sponsorship_type")
+  paymentType       PaymentType       @map("payment_type")
+  sponsorshipStatus SponsorshipStatus @default(PENDING) @map("sponsorship_status")
+  applicationDate   DateTime          @default(now()) @map("application_date")
+  approvedDate      DateTime?         @map("approved_date")
+  approvedBy        String?           @map("approved_by")
+  approvedByUser    User?             @relation(fields: [approvedBy], references: [id], onDelete: SetNull)
+  notes             String?
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  @@index([sponsorshipStatus])
+  @@index([sponsorshipType])
+  @@index([applicationDate])
+  @@index([approvedBy])
+  @@map("sponsorships")
 }

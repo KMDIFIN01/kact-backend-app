@@ -76,3 +76,35 @@ export interface Membership {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export enum SponsorshipStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  EXPIRED = 'EXPIRED',
+}
+
+export interface Sponsorship {
+  id: string;
+  businessName: string;
+  businessType: string;
+  websiteUrl: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  address1: string;
+  address2: string | null;
+  city: string;
+  state: string;
+  zip: string;
+  sponsorshipType: string;
+  paymentType: PaymentType;
+  sponsorshipStatus: SponsorshipStatus;
+  applicationDate: Date;
+  approvedDate: Date | null;
+  approvedBy: string | null;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}

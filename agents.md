@@ -32,13 +32,15 @@ backend/
 │   │   ├── auth.controller.ts  # Authentication endpoints
 │   │   ├── user.controller.ts  # User management
 │   │   ├── gallery.controller.ts # Gallery endpoints
-│   │   └── membership.controller.ts # Membership endpoints
+│   │   ├── membership.controller.ts # Membership endpoints
+│   │   └── sponsorship.controller.ts # Sponsorship endpoints
 │   ├── services/
 │   │   ├── auth.service.ts     # Auth business logic
 │   │   ├── token.service.ts    # JWT operations
 │   │   ├── email.service.ts    # Email sending
 │   │   ├── gallery.service.ts  # Gallery business logic
-│   │   └── membership.service.ts # Membership business logic
+│   │   ├── membership.service.ts # Membership business logic
+│   │   └── sponsorship.service.ts # Sponsorship business logic
 │   ├── middlewares/
 │   │   ├── auth.middleware.ts  # JWT authentication
 │   │   ├── admin.middleware.ts # Admin authorization
@@ -51,11 +53,13 @@ backend/
 │   │   ├── auth.routes.ts      # Auth routes
 │   │   ├── gallery.routes.ts   # Gallery routes
 │   │   ├── membership.routes.ts # Membership routes
+│   │   ├── sponsorship.routes.ts # Sponsorship routes
 │   │   └── index.ts            # Route aggregation
 │   ├── validators/
 │   │   ├── auth.validator.ts   # Input validators
 │   │   ├── gallery.validator.ts # Gallery input validators
-│   │   └── membership.validator.ts # Membership input validators
+│   │   ├── membership.validator.ts # Membership input validators
+│   │   └── sponsorship.validator.ts # Sponsorship input validators
 │   ├── types/
 │   │   ├── api.ts              # API type definitions
 │   │   └── express.d.ts        # Express extensions
@@ -103,6 +107,13 @@ enum MembershipStatus {
   REJECTED
   EXPIRED
 }
+
+enum SponsorshipStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+}
 ```
 
 ### User Model
@@ -139,6 +150,7 @@ model User {
   refreshTokens             RefreshToken[]
   galleryPhotos             GalleryPhoto[]
   memberships               Membership[]
+  sponsorships              Sponsorship[]
   
   @@index([email])
   @@index([emailVerificationToken])
@@ -211,6 +223,41 @@ model Membership {
   @@index([applicationDate])
   @@index([approvedBy])
   @@map("memberships")
+}
+```
+
+### Sponsorship Model
+```prisma
+model Sponsorship {
+  id                String            @id @default(cuid())
+  businessName      String            @map("business_name")
+  businessType      String            @map("business_type")
+  websiteUrl        String?           @map("website_url")
+  firstName         String            @map("first_name")
+  lastName          String            @map("last_name")
+  email             String
+  phoneNumber       String            @map("phone_number")
+  address1          String            @map("address_1")
+  address2          String?           @map("address_2")
+  city              String
+  state             String
+  zip               String
+  sponsorshipType   String            @map("sponsorship_type")
+  paymentType       PaymentType       @map("payment_type")
+  sponsorshipStatus SponsorshipStatus @default(PENDING) @map("sponsorship_status")
+  applicationDate   DateTime          @default(now()) @map("application_date")
+  approvedDate      DateTime?         @map("approved_date")
+  approvedBy        String?           @map("approved_by")
+  approvedByUser    User?             @relation(fields: [approvedBy], references: [id], onDelete: SetNull)
+  notes             String?
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  @@index([sponsorshipStatus])
+  @@index([sponsorshipType])
+  @@index([applicationDate])
+  @@index([approvedBy])
+  @@map("sponsorships")
 }
 ```
 
@@ -409,6 +456,205 @@ Response (200):
       }
     }
   }
+}
+```
+
+### Sponsorship Routes (`/sponsorship`)
+
+#### Create Sponsorship Application
+```http
+POST /api/v1/sponsorship
+Content-Type: application/json
+
+Note: This is a public endpoint - no authentication required.
+Anyone can submit a sponsorship application.
+
+{
+  "businessName": "Acme Corp",
+  "businessType": "Technology",
+  "websiteUrl": "https://acme.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john@acme.com",
+  "phoneNumber": "+1234567890",
+  "address1": "123 Main St",
+  "address2": "Suite 100",
+  "city": "New York",
+  "state": "NY",
+  "zip": "10001",
+  "sponsorshipType": "Gold",
+  "paymentType": "CASH",
+  "notes": "Additional notes"
+}
+
+Response (201):
+{
+  "success": true,
+  "message": "Sponsorship application created successfully",
+  "data": {
+    "sponsorship": {
+      "id": "clxxx...",
+      "businessName": "Acme Corp",
+      "businessType": "Technology",
+      "websiteUrl": "https://acme.com",
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john@acme.com",
+      "phoneNumber": "+1234567890",
+      "address1": "123 Main St",
+      "address2": "Suite 100",
+      "city": "New York",
+      "state": "NY",
+      "zip": "10001",
+      "sponsorshipType": "Gold",
+      "paymentType": "CASH",
+      "sponsorshipStatus": "PENDING",
+      "applicationDate": "2026-03-04T12:00:00.000Z",
+      "approvedDate": null,
+      "approvedBy": null,
+      "notes": "Additional notes",
+      "createdAt": "2026-03-04T12:00:00.000Z",
+      "updatedAt": "2026-03-04T12:00:00.000Z"
+    }
+  }
+}
+```
+
+#### Get All Sponsorships
+```http
+GET /api/v1/sponsorship/all
+Authorization: Bearer {adminAccessToken}
+
+Response (200):
+{
+  "success": true,
+  "message": "Sponsorships retrieved successfully",
+  "data": {
+    "sponsorships": [
+      {
+        "id": "clxxx...",
+        "businessName": "Acme Corp",
+        "businessType": "Technology",
+        "websiteUrl": "https://acme.com",
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john@acme.com",
+        "phoneNumber": "+1234567890",
+        "address1": "123 Main St",
+        "address2": "Suite 100",
+        "city": "New York",
+        "state": "NY",
+        "zip": "10001",
+        "sponsorshipType": "Gold",
+        "sponsorshipStatus": "PENDING",
+        "applicationDate": "2026-03-04T12:00:00.000Z",
+        "approvedDate": null,
+        "notes": "Additional notes",
+        "approvedByUser": null
+      }
+    ]
+  }
+}
+```
+
+#### Update Sponsorship Status
+```http
+PATCH /api/v1/sponsorship/:id/status
+Authorization: Bearer {adminAccessToken}
+Content-Type: application/json
+
+{
+  "sponsorshipStatus": "APPROVED"
+}
+
+Response (200):
+{
+  "success": true,
+  "message": "Sponsorship status updated successfully",
+  "data": {
+    "sponsorship": {
+      "id": "clxxx...",
+      "businessName": "Acme Corp",
+      "businessType": "Technology",
+      "websiteUrl": "https://acme.com",
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john@acme.com",
+      "phoneNumber": "+1234567890",
+      "address1": "123 Main St",
+      "address2": "Suite 100",
+      "city": "New York",
+      "state": "NY",
+      "zip": "10001",
+      "sponsorshipType": "Gold",
+      "sponsorshipStatus": "APPROVED",
+      "applicationDate": "2026-03-04T12:00:00.000Z",
+      "approvedDate": "2026-03-04T12:05:00.000Z",
+      "notes": "Additional notes",
+      "approvedByUser": {
+        "id": "clyyy...",
+        "name": "Admin User",
+        "email": "admin@example.com"
+      }
+    }
+  }
+}
+```
+
+#### Bulk Update Sponsorship Status
+```http
+PATCH /api/v1/sponsorship/bulk/status
+Authorization: Bearer {adminAccessToken}
+Content-Type: application/json
+
+{
+  "ids": ["clxxx...", "clyyy..."],
+  "sponsorshipStatus": "APPROVED"
+}
+
+Response (200):
+{
+  "success": true,
+  "message": "2 sponsorship(s) status updated successfully",
+  "data": {
+    "count": 2,
+    "sponsorships": [...]
+  }
+}
+```
+
+#### Filter Sponsorships by Status
+```http
+GET /api/v1/sponsorship/filter/status/:status
+Authorization: Bearer {adminAccessToken}
+```
+
+#### Filter Sponsorships by Payment Type
+```http
+GET /api/v1/sponsorship/filter/payment/:paymentType
+Authorization: Bearer {adminAccessToken}
+```
+
+#### Search Sponsorships
+```http
+POST /api/v1/sponsorship/search
+Authorization: Bearer {adminAccessToken}
+Content-Type: application/json
+
+{
+  "searchTerm": "Acme"
+}
+```
+
+#### Filter Sponsorships by Date Range
+```http
+POST /api/v1/sponsorship/filter/date-range
+Authorization: Bearer {adminAccessToken}
+Content-Type: application/json
+
+{
+  "startDate": "2026-01-01T00:00:00.000Z",
+  "endDate": "2026-12-31T23:59:59.000Z"
 }
 ```
 
