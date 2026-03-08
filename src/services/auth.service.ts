@@ -125,6 +125,7 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         name: user.name,
+        role: user.role,
         emailVerified: user.emailVerified,
       },
       accessToken,
