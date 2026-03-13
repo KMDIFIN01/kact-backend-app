@@ -15,7 +15,7 @@ export const requireAdmin = (
       throw new ForbiddenError('Authentication required');
     }
 
-    if (req.user.role !== 'ADMIN') {
+    if (req.user.role !== 'ADMIN' && req.user.role !== 'SUPER') {
       throw new ForbiddenError('Admin access required');
     }
 

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { GalleryController } from '@controllers/gallery.controller';
 import { authenticate } from '@middlewares/auth.middleware';
+import { requireAdmin } from '@middlewares/admin.middleware';
 import { validate } from '@middlewares/validate.middleware';
 import { galleryUpload } from '@middlewares/upload.middleware';
 import { getGalleryValidator, uploadGalleryValidator } from '../validators/gallery.validator';
@@ -16,6 +17,7 @@ const galleryController = new GalleryController();
 router.post(
   '/upload',
   authenticate,
+  requireAdmin,
   galleryUpload,
   validate(uploadGalleryValidator),
   galleryController.upload
