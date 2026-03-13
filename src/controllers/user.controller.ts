@@ -9,8 +9,12 @@ export class UserController {
       const users = await prisma.user.findMany({
         select: {
           id: true,
+          email: true,
           name: true,
+          firstName: true,
+          lastName: true,
           phone: true,
+          role: true,
           address1: true,
           address2: true,
           city: true,
@@ -32,8 +36,12 @@ export class UserController {
 
         return {
           id: user.id,
+          email: user.email,
           name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
           phone: user.phone,
+          role: user.role,
           address: addressParts.join(', '),
           createddate: user.createdAt,
         };
