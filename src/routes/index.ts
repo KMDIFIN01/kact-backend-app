@@ -5,6 +5,7 @@ import galleryRoutes from './gallery.routes';
 import membershipRoutes from './membership.routes';
 import eventRoutes from './event.routes';
 import sponsorshipRoutes from './sponsorship.routes';
+import analyticsRoutes from './analytics.routes';
 import { getCsrfToken, csrfTokenHandler } from '@middlewares/csrf.middleware';
 
 const router = Router();
@@ -29,5 +30,6 @@ router.use('/gallery', galleryRoutes);
 router.use('/membership', membershipRoutes);
 router.use('/events', eventRoutes);
 router.use('/sponsorship', sponsorshipRoutes);
+router.use('/analytics', analyticsRoutes);
 
 export default router;

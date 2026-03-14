@@ -65,6 +65,8 @@ model User {
   galleryPhotos           GalleryPhoto[]
   memberships             Membership[]
   sponsorships            Sponsorship[]
+  pageVisits              PageVisit[]
+  userActivities          UserActivity[]
 
   @@index([email])
   @@index([emailVerificationToken])
@@ -175,4 +177,39 @@ model Sponsorship {
   @@index([applicationDate])
   @@index([approvedBy])
   @@map("sponsorships")
+}
+
+model PageVisit {
+  id        String   @id @default(cuid())
+  sessionId String   @map("session_id")
+  userId    String?  @map("user_id")
+  page      String
+  referrer  String?
+  userAgent String?  @map("user_agent")
+  ipHash    String?  @map("ip_hash")
+  visitedAt DateTime @default(now()) @map("visited_at")
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([sessionId])
+  @@index([userId])
+  @@index([page])
+  @@index([visitedAt])
+  @@map("page_visits")
+}
+
+model UserActivity {
+  id          String   @id @default(cuid())
+  sessionId   String   @map("session_id")
+  userId      String?  @map("user_id")
+  action      String
+  details     String?
+  page        String
+  performedAt DateTime @default(now()) @map("performed_at")
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([sessionId])
+  @@index([userId])
+  @@index([action])
+  @@index([performedAt])
+  @@map("user_activities")
 }
