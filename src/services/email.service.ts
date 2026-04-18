@@ -2,6 +2,7 @@ import { Resend } from 'resend';
 import { emailConfig } from '@config/email';
 import { verificationEmailTemplate, verificationEmailText } from '../templates/verificationEmail';
 import { passwordResetEmailTemplate, passwordResetEmailText } from '../templates/passwordResetEmail';
+import { registrationSuccessEmailTemplate, registrationSuccessEmailText } from '../templates/registrationSuccessEmail';
 
 export class EmailService {
   private resend: Resend;
@@ -50,24 +51,19 @@ export class EmailService {
     }
   }
 
-  async sendWelcomeEmail(email: string, name: string): Promise<void> {
+  async sendRegistrationSuccessEmail(email: string, name: string): Promise<void> {
     try {
       await this.resend.emails.send({
         from: `${emailConfig.fromName} <${emailConfig.fromEmail}>`,
         to: email,
-        subject: 'Welcome to KACT!',
-        html: `
-          <h1>Welcome to KACT, ${name}!</h1>
-          <p>Your email has been successfully verified. You can now access all features of your account.</p>
-          <p>If you have any questions, feel free to reach out to our support team.</p>
-          <p>Best regards,<br>The KACT Team</p>
-        `,
-        text: `Welcome to KACT, ${name}!\n\nYour email has been successfully verified. You can now access all features of your account.\n\nIf you have any questions, feel free to reach out to our support team.\n\nBest regards,\nThe KACT Team`,
+        subject: 'Registration Successful - KACT',
+        html: registrationSuccessEmailTemplate(name),
+        text: registrationSuccessEmailText(name),
       });
-      console.log(`✉️ Welcome email sent to ${email}`);
+      console.log(`✉️ Registration success email sent to ${email}`);
     } catch (error) {
-      console.error('Failed to send welcome email:', error);
-      // Don't throw error for welcome email as it's not critical
+      console.error('Failed to send registration success email:', error);
+      // Don't throw error for registration success email as it's not critical
     }
   }
 }

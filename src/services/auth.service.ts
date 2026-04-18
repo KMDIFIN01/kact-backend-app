@@ -39,7 +39,7 @@ export class AuthService {
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      throw new BadRequestError('Email already registered');
+      throw new BadRequestError('This email address is already registered. Please use a different email address or log in to your existing account.');
     }
 
     // Hash password
@@ -80,6 +80,9 @@ export class AuthService {
 
     // Send verification email
     await this.emailService.sendVerificationEmail(email, `${firstName} ${lastName}`, verificationToken);
+
+    // Send registration success email
+    await this.emailService.sendRegistrationSuccessEmail(email, `${firstName} ${lastName}`);
 
     return { user };
   }
@@ -157,9 +160,6 @@ export class AuthService {
         emailVerificationExpiry: null,
       },
     });
-
-    // Send welcome email
-    await this.emailService.sendWelcomeEmail(user.email, user.name || 'User');
   }
 
   async resendVerification(email: string) {
