@@ -48,12 +48,11 @@ export const registrationSuccessEmailTemplate = (name: string): string => {
       <div class="container">
         <h1>Registration Successful!</h1>
         <p>Hi ${name},</p>
-        <p>Congratulations! Your KACT account has been successfully created.</p>
+        <p>Congratulations! Your email has been verified and your KACT account is now fully registered.</p>
         <div class="reminder-notice">
-          <strong>📧 Next Step:</strong> Please check your inbox for a separate <strong>verification email</strong> and click the link to activate your account. The verification link expires in <strong>24 hours</strong>.
+          <strong>✅ You're all set!</strong> Please <strong>log in</strong> to your account to access all KACT features including events, memberships, and more.
         </div>
-        <p>Once your email is verified, you'll have full access to all KACT features including events, memberships, and more.</p>
-        <p>If you don't see the verification email, please check your spam or junk folder.</p>
+        <p>If you have any questions, feel free to reach out to our support team.</p>
         <p style="margin-top: 30px;">Welcome aboard!<br>The KACT Team</p>
       </div>
       <div class="footer">
@@ -70,13 +69,11 @@ Registration Successful!
 
 Hi ${name},
 
-Congratulations! Your KACT account has been successfully created.
+Congratulations! Your email has been verified and your KACT account is now fully registered.
 
-📧 NEXT STEP: Please check your inbox for a separate verification email and click the link to activate your account. The verification link expires in 24 hours.
+✅ YOU'RE ALL SET! Please log in to your account to access all KACT features including events, memberships, and more.
 
-Once your email is verified, you'll have full access to all KACT features including events, memberships, and more.
-
-If you don't see the verification email, please check your spam or junk folder.
+If you have any questions, feel free to reach out to our support team.
 
 Welcome aboard!
 The KACT Team

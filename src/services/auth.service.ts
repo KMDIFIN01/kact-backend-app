@@ -81,9 +81,6 @@ export class AuthService {
     // Send verification email
     await this.emailService.sendVerificationEmail(email, `${firstName} ${lastName}`, verificationToken);
 
-    // Send registration success email
-    await this.emailService.sendRegistrationSuccessEmail(email, `${firstName} ${lastName}`);
-
     return { user };
   }
 
@@ -160,6 +157,9 @@ export class AuthService {
         emailVerificationExpiry: null,
       },
     });
+
+    // Send registration success email
+    await this.emailService.sendRegistrationSuccessEmail(user.email, user.name || 'User');
   }
 
   async resendVerification(email: string) {
