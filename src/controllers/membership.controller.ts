@@ -28,6 +28,7 @@ export class MembershipController {
         membershipType,
         paymentType,
         notes,
+        familyMembers,
       } = req.body;
 
       const membership = await this.membershipService.createMembership({
@@ -43,6 +44,7 @@ export class MembershipController {
         membershipType,
         paymentType,
         notes,
+        familyMembers,
       });
 
       createdResponse(res, { membership }, 'Membership application created successfully');

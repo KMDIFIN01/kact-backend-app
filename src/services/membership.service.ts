@@ -1,6 +1,15 @@
 import prisma from '@config/database';
 import { NotFoundError, BadRequestError } from '@utils/errors';
-import { MembershipType, PaymentType, MembershipStatus } from '../types/api';
+import { MembershipType, PaymentType, MembershipStatus, FamilyMemberType } from '../types/api';
+
+interface FamilyMemberInput {
+  type: FamilyMemberType;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phoneNumber?: string;
+  age?: number;
+}
 
 interface CreateMembershipInput {
   firstName: string;
@@ -15,6 +24,7 @@ interface CreateMembershipInput {
   membershipType: MembershipType;
   paymentType: PaymentType;
   notes?: string;
+  familyMembers?: FamilyMemberInput[];
 }
 
 interface UpdateMembershipStatusInput {
@@ -42,6 +52,18 @@ export class MembershipService {
         membershipType: data.membershipType,
         paymentType: data.paymentType,
         notes: data.notes || null,
+        ...(data.familyMembers && data.familyMembers.length > 0 ? {
+          familyMembers: {
+            create: data.familyMembers.map(fm => ({
+              type: fm.type,
+              firstName: fm.firstName,
+              lastName: fm.lastName,
+              email: fm.email || null,
+              phoneNumber: fm.phoneNumber || null,
+              age: fm.age ?? null,
+            })),
+          },
+        } : {}),
       },
       select: {
         id: true,
@@ -61,6 +83,7 @@ export class MembershipService {
         approvedDate: true,
         approvedBy: true,
         notes: true,
+        familyMembers: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -91,6 +114,7 @@ export class MembershipService {
         applicationDate: true,
         approvedDate: true,
         notes: true,
+        familyMembers: true,
         approvedByUser: {
           select: {
             id: true,
@@ -151,6 +175,7 @@ export class MembershipService {
         applicationDate: true,
         approvedDate: true,
         notes: true,
+        familyMembers: true,
         approvedByUser: {
           select: {
             id: true,
@@ -216,6 +241,7 @@ export class MembershipService {
         applicationDate: true,
         approvedDate: true,
         notes: true,
+        familyMembers: true,
         approvedByUser: {
           select: {
             id: true,
@@ -255,6 +281,7 @@ export class MembershipService {
         applicationDate: true,
         approvedDate: true,
         notes: true,
+        familyMembers: true,
         approvedByUser: {
           select: {
             id: true,
@@ -292,6 +319,7 @@ export class MembershipService {
         applicationDate: true,
         approvedDate: true,
         notes: true,
+        familyMembers: true,
         approvedByUser: {
           select: {
             id: true,
@@ -333,6 +361,7 @@ export class MembershipService {
         applicationDate: true,
         approvedDate: true,
         notes: true,
+        familyMembers: true,
         approvedByUser: {
           select: {
             id: true,
@@ -370,6 +399,7 @@ export class MembershipService {
         applicationDate: true,
         approvedDate: true,
         notes: true,
+        familyMembers: true,
         approvedByUser: {
           select: {
             id: true,
@@ -412,6 +442,7 @@ export class MembershipService {
         applicationDate: true,
         approvedDate: true,
         notes: true,
+        familyMembers: true,
         approvedByUser: {
           select: {
             id: true,
@@ -455,6 +486,7 @@ export class MembershipService {
         applicationDate: true,
         approvedDate: true,
         notes: true,
+        familyMembers: true,
         approvedByUser: {
           select: {
             id: true,

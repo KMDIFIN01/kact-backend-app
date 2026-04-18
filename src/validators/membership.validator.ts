@@ -70,6 +70,43 @@ export const createMembershipValidator = [
     .trim()
     .isLength({ max: 1000 })
     .withMessage('Notes must be 1000 characters or less'),
+  body('familyMembers')
+    .optional()
+    .isArray({ max: 4 })
+    .withMessage('Family members must be an array with at most 4 entries'),
+  body('familyMembers.*.type')
+    .optional()
+    .isIn(['SPOUSE', 'CHILD'])
+    .withMessage('Family member type must be SPOUSE or CHILD'),
+  body('familyMembers.*.firstName')
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage('Family member first name is required')
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Family member first name must be between 1 and 100 characters'),
+  body('familyMembers.*.lastName')
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage('Family member last name is required')
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Family member last name must be between 1 and 100 characters'),
+  body('familyMembers.*.email')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isEmail()
+    .withMessage('Invalid family member email format')
+    .normalizeEmail(),
+  body('familyMembers.*.phoneNumber')
+    .optional({ checkFalsy: true })
+    .trim()
+    .matches(/^[\d\s\-\+\(\)]+$/)
+    .withMessage('Invalid family member phone number format'),
+  body('familyMembers.*.age')
+    .optional({ nullable: true })
+    .isInt({ min: 0, max: 17 })
+    .withMessage('Child age must be between 0 and 17'),
 ];
 
 export const updateMembershipStatusValidator = [

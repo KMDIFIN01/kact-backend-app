@@ -55,6 +55,24 @@ export enum MembershipStatus {
   EXPIRED = 'EXPIRED',
 }
 
+export enum FamilyMemberType {
+  SPOUSE = 'SPOUSE',
+  CHILD = 'CHILD',
+}
+
+export interface FamilyMember {
+  id: string;
+  membershipId: string;
+  type: FamilyMemberType;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  phoneNumber: string | null;
+  age: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface Membership {
   id: string;
   firstName: string;
@@ -73,6 +91,7 @@ export interface Membership {
   approvedDate: Date | null;
   approvedBy: string | null;
   notes: string | null;
+  familyMembers?: FamilyMember[];
   createdAt: Date;
   updatedAt: Date;
 }

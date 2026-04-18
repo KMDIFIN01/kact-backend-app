@@ -33,6 +33,11 @@ enum MembershipStatus {
   EXPIRED
 }
 
+enum FamilyMemberType {
+  SPOUSE
+  CHILD
+}
+
 enum SponsorshipStatus {
   PENDING
   APPROVED
@@ -122,6 +127,7 @@ model Membership {
   approvedBy       String?          @map("approved_by")
   approvedByUser   User?            @relation(fields: [approvedBy], references: [id], onDelete: SetNull)
   notes            String?
+  familyMembers    FamilyMember[]
   createdAt        DateTime         @default(now()) @map("created_at")
   updatedAt        DateTime         @updatedAt @map("updated_at")
 
@@ -130,6 +136,23 @@ model Membership {
   @@index([applicationDate])
   @@index([approvedBy])
   @@map("memberships")
+}
+
+model FamilyMember {
+  id           String           @id @default(cuid())
+  membershipId String           @map("membership_id")
+  membership   Membership       @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  type         FamilyMemberType
+  firstName    String           @map("first_name")
+  lastName     String           @map("last_name")
+  email        String?
+  phoneNumber  String?          @map("phone_number")
+  age          Int?
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  @@index([membershipId])
+  @@map("family_members")
 }
 
 model Event {
