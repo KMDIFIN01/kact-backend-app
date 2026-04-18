@@ -4,7 +4,7 @@ import { authenticate } from '@middlewares/auth.middleware';
 import { requireAdmin } from '@middlewares/admin.middleware';
 import { validate } from '@middlewares/validate.middleware';
 import { galleryUpload } from '@middlewares/upload.middleware';
-import { getGalleryValidator, uploadGalleryValidator } from '../validators/gallery.validator';
+import { getGalleryValidator, uploadGalleryValidator, deleteGalleryValidator } from '../validators/gallery.validator';
 
 const router = Router();
 const galleryController = new GalleryController();
@@ -33,6 +33,19 @@ router.get(
   authenticate,
   validate(getGalleryValidator),
   galleryController.getByEventYear
+);
+
+/**
+ * @route   DELETE /api/v1/gallery/:id
+ * @desc    Delete a gallery photo
+ * @access  Private (Admin only)
+ */
+router.delete(
+  '/:id',
+  authenticate,
+  requireAdmin,
+  validate(deleteGalleryValidator),
+  galleryController.delete
 );
 
 export default router;

@@ -2,7 +2,7 @@ import path from 'path';
 type MulterFile = Express.Multer.File;
 import prisma from '@config/database';
 import cloudinary, { galleryFolder } from '@config/cloudinary';
-import { BadRequestError } from '@utils/errors';
+import { BadRequestError, NotFoundError } from '@utils/errors';
 
 
 interface UploadGalleryInput {
@@ -65,6 +65,43 @@ export class GalleryService {
         userId: true,
       },
     });
+  }
+
+  async deletePhoto(id: string) {
+    const photo = await prisma.galleryPhoto.findUnique({ where: { id } });
+    if (!photo) {
+      throw new NotFoundError('Photo not found');
+    }
+
+    // Extract Cloudinary public_id from the URL and attempt cleanup
+    try {
+      const publicId = this.extractPublicId(photo.photoUrl);
+      if (publicId) {
+        await cloudinary.uploader.destroy(publicId);
+      }
+    } catch (error) {
+      console.error('Failed to delete photo from Cloudinary:', error);
+      // Continue with DB deletion even if Cloudinary cleanup fails
+    }
+
+    await prisma.galleryPhoto.delete({ where: { id } });
+  }
+
+  private extractPublicId(photoUrl: string): string | null {
+    try {
+      const url = new URL(photoUrl);
+      // Cloudinary URLs: .../upload/v{version}/{folder}/{file}.ext
+      const uploadIndex = url.pathname.indexOf('/upload/');
+      if (uploadIndex === -1) return null;
+      const afterUpload = url.pathname.substring(uploadIndex + '/upload/'.length);
+      // Remove version prefix (v1234567890/)
+      const withoutVersion = afterUpload.replace(/^v\d+\//, '');
+      // Remove file extension
+      const publicId = withoutVersion.replace(/\.[^.]+$/, '');
+      return publicId || null;
+    } catch {
+      return null;
+    }
   }
 
   private uploadToCloudinary(file: MulterFile, eventId: string, year: number) {

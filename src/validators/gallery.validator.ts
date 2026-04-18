@@ -32,3 +32,7 @@ export const getGalleryValidator = [
     .isInt({ min: 1900, max: 2100 })
     .withMessage('Year must be a valid 4-digit year'),
 ];
+
+export const deleteGalleryValidator = [
+  param('id').trim().notEmpty().withMessage('Photo ID is required'),
+];

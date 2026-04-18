@@ -49,4 +49,14 @@ export class GalleryController {
       next(error);
     }
   };
+
+  delete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      await this.galleryService.deletePhoto(id);
+      successResponse(res, null, 'Photo deleted successfully');
+    } catch (error) {
+      next(error);
+    }
+  };
 }
