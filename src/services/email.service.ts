@@ -3,6 +3,7 @@ import { emailConfig } from '@config/email';
 import { verificationEmailTemplate, verificationEmailText } from '../templates/verificationEmail';
 import { passwordResetEmailTemplate, passwordResetEmailText } from '../templates/passwordResetEmail';
 import { registrationSuccessEmailTemplate, registrationSuccessEmailText } from '../templates/registrationSuccessEmail';
+import { applicationSubmittedEmailTemplate, applicationSubmittedEmailText } from '../templates/applicationSubmittedEmail';
 
 export class EmailService {
   private resend: Resend;
@@ -64,6 +65,23 @@ export class EmailService {
     } catch (error) {
       console.error('Failed to send registration success email:', error);
       // Don't throw error for registration success email as it's not critical
+    }
+  }
+
+  async sendApplicationSubmittedEmail(email: string, name: string, applicationType: 'membership' | 'sponsorship'): Promise<void> {
+    const typeLabel = applicationType === 'membership' ? 'Membership' : 'Sponsorship';
+    try {
+      await this.resend.emails.send({
+        from: `${emailConfig.fromName} <${emailConfig.fromEmail}>`,
+        to: email,
+        subject: `${typeLabel} Application Received - KACT`,
+        html: applicationSubmittedEmailTemplate(name, applicationType),
+        text: applicationSubmittedEmailText(name, applicationType),
+      });
+      console.log(`✉️ ${typeLabel} application email sent to ${email}`);
+    } catch (error) {
+      console.error(`Failed to send ${typeLabel.toLowerCase()} application email:`, error);
+      // Don't throw error as it's not critical
     }
   }
 }

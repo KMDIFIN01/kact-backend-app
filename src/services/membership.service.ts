@@ -1,6 +1,7 @@
 import prisma from '@config/database';
 import { NotFoundError, BadRequestError } from '@utils/errors';
 import { MembershipType, PaymentType, MembershipStatus, FamilyMemberType } from '../types/api';
+import { EmailService } from './email.service';
 
 interface FamilyMemberInput {
   type: FamilyMemberType;
@@ -34,6 +35,12 @@ interface UpdateMembershipStatusInput {
 }
 
 export class MembershipService {
+  private emailService: EmailService;
+
+  constructor() {
+    this.emailService = new EmailService();
+  }
+
   /**
    * Create a new membership application
    */
@@ -88,6 +95,13 @@ export class MembershipService {
         updatedAt: true,
       },
     });
+
+    // Send application submitted email
+    await this.emailService.sendApplicationSubmittedEmail(
+      data.email,
+      `${data.firstName} ${data.lastName}`,
+      'membership'
+    );
 
     return membership;
   }

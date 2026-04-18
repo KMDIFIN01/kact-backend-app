@@ -50,7 +50,7 @@ export const registrationSuccessEmailTemplate = (name: string): string => {
         <p>Hi ${name},</p>
         <p>Congratulations! Your email has been verified and your KACT account is now fully registered.</p>
         <div class="reminder-notice">
-          <strong>✅ You're all set!</strong> Please <strong>log in</strong> to your account to access all KACT features including events, memberships, and more.
+          <strong>✅ You're all set!</strong> Please <a href="https://www.kactusa.org/login" style="color: #3498db; font-weight: bold;">log in</a> to your account to access all KACT features including events, memberships, and more.
         </div>
         <p>If you have any questions, feel free to reach out to our support team.</p>
         <p style="margin-top: 30px;">Welcome aboard!<br>The KACT Team</p>
@@ -71,7 +71,7 @@ Hi ${name},
 
 Congratulations! Your email has been verified and your KACT account is now fully registered.
 
-✅ YOU'RE ALL SET! Please log in to your account to access all KACT features including events, memberships, and more.
+✅ YOU'RE ALL SET! Please log in at https://www.kactusa.com/login to access all KACT features including events, memberships, and more.
 
 If you have any questions, feel free to reach out to our support team.
 

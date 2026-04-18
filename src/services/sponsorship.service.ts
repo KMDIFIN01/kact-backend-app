@@ -1,6 +1,7 @@
 import prisma from '@config/database';
 import { NotFoundError, BadRequestError } from '@utils/errors';
 import { PaymentType, SponsorshipStatus } from '../types/api';
+import { EmailService } from './email.service';
 
 interface CreateSponsorshipInput {
   businessName: string;
@@ -27,6 +28,12 @@ interface UpdateSponsorshipStatusInput {
 }
 
 export class SponsorshipService {
+  private emailService: EmailService;
+
+  constructor() {
+    this.emailService = new EmailService();
+  }
+
   /**
    * Create a new sponsorship application
    */
@@ -74,6 +81,13 @@ export class SponsorshipService {
         updatedAt: true,
       },
     });
+
+    // Send application submitted email
+    await this.emailService.sendApplicationSubmittedEmail(
+      data.email,
+      `${data.firstName} ${data.lastName}`,
+      'sponsorship'
+    );
 
     return sponsorship;
   }
