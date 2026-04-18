@@ -62,7 +62,7 @@ export const applicationSubmittedEmailTemplate = (name: string, applicationType:
           <strong>⚠️ Important:</strong> Please note that submitting this application does <strong>not guarantee</strong> your ${typeLabel.toLowerCase()}. Your ${typeLabel.toLowerCase()} will only be confirmed once <strong>payment is completed</strong> and your application is <strong>approved by a KACT administrator</strong>.
         </div>
         <div class="info-notice">
-          <strong>🔑 Website Access:</strong> To access the KACT website features, you need to <strong>register/create a user account</strong> on the KACT website. You can do so by visiting <a href="https://www.kactusa.org/login" style="color: #3498db; font-weight: bold;">www.kactusa.org</a> and clicking on the Register link.
+          <strong>🔑 Website Access:</strong> To access the KACT website features, you need to <strong>register/login</strong> user account on the KACT website. You can do so by visiting <a href="https://www.kactusa.org/login" style="color: #3498db; font-weight: bold;">www.kactusa.org</a> and clicking on the Register/Login link.
         </div>
         <p>Our team will review your application and get back to you. If you have any questions in the meantime, feel free to reach out to our support team.</p>
         <p style="margin-top: 30px;">Thank you for your interest in KACT!<br>The KACT Team</p>
@@ -87,7 +87,7 @@ Thank you for submitting your ${typeLabel.toLowerCase()} application with KACT. 
 
 ⚠️ IMPORTANT: Please note that submitting this application does not guarantee your ${typeLabel.toLowerCase()}. Your ${typeLabel.toLowerCase()} will only be confirmed once payment is completed and your application is approved by a KACT administrator.
 
-🔑 WEBSITE ACCESS: To access the KACT website features, you need to register/create a user account on the KACT website. You can do so by visiting https://www.kactusa.org/login and clicking on the Register link.
+🔑 WEBSITE ACCESS: To access the KACT website features, you need to register/login user account on the KACT website. You can do so by visiting https://www.kactusa.org/login and clicking on the Register/Login link.
 
 Our team will review your application and get back to you. If you have any questions in the meantime, feel free to reach out to our support team.
 
