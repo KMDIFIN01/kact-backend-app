@@ -5,6 +5,7 @@ import { passwordResetEmailTemplate, passwordResetEmailText } from '../templates
 import { registrationSuccessEmailTemplate, registrationSuccessEmailText } from '../templates/registrationSuccessEmail';
 import { applicationSubmittedEmailTemplate, applicationSubmittedEmailText } from '../templates/applicationSubmittedEmail';
 
+
 export class EmailService {
   private resend: Resend;
 
