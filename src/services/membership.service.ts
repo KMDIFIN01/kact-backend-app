@@ -200,6 +200,16 @@ export class MembershipService {
       },
     });
 
+    // Send status notification email for APPROVED or REJECTED
+    if (membershipStatus === 'APPROVED' || membershipStatus === 'REJECTED') {
+      await this.emailService.sendApplicationStatusEmail(
+        updatedMembership.email,
+        `${updatedMembership.firstName} ${updatedMembership.lastName}`,
+        'membership',
+        membershipStatus.toLowerCase() as 'approved' | 'rejected'
+      );
+    }
+
     return updatedMembership;
   }
 
@@ -265,6 +275,18 @@ export class MembershipService {
         },
       },
     });
+
+    // Send status notification emails for APPROVED or REJECTED
+    if (membershipStatus === 'APPROVED' || membershipStatus === 'REJECTED') {
+      for (const membership of updatedMemberships) {
+        await this.emailService.sendApplicationStatusEmail(
+          membership.email,
+          `${membership.firstName} ${membership.lastName}`,
+          'membership',
+          membershipStatus.toLowerCase() as 'approved' | 'rejected'
+        );
+      }
+    }
 
     return {
       count: result.count,

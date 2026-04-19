@@ -4,6 +4,7 @@ import { verificationEmailTemplate, verificationEmailText } from '../templates/v
 import { passwordResetEmailTemplate, passwordResetEmailText } from '../templates/passwordResetEmail';
 import { registrationSuccessEmailTemplate, registrationSuccessEmailText } from '../templates/registrationSuccessEmail';
 import { applicationSubmittedEmailTemplate, applicationSubmittedEmailText } from '../templates/applicationSubmittedEmail';
+import { applicationStatusEmailTemplate, applicationStatusEmailText } from '../templates/applicationStatusEmail';
 
 
 export class EmailService {
@@ -82,6 +83,24 @@ export class EmailService {
       console.log(`✉️ ${typeLabel} application email sent to ${email}`);
     } catch (error) {
       console.error(`Failed to send ${typeLabel.toLowerCase()} application email:`, error);
+      // Don't throw error as it's not critical
+    }
+  }
+
+  async sendApplicationStatusEmail(email: string, name: string, applicationType: 'membership' | 'sponsorship', status: 'approved' | 'rejected'): Promise<void> {
+    const typeLabel = applicationType === 'membership' ? 'Membership' : 'Sponsorship';
+    const statusLabel = status === 'approved' ? 'Approved' : 'Rejected';
+    try {
+      await this.resend.emails.send({
+        from: `${emailConfig.fromName} <${emailConfig.fromEmail}>`,
+        to: email,
+        subject: `${typeLabel} Application ${statusLabel} - KACT`,
+        html: applicationStatusEmailTemplate(name, applicationType, status),
+        text: applicationStatusEmailText(name, applicationType, status),
+      });
+      console.log(`✉️ ${typeLabel} ${statusLabel.toLowerCase()} email sent to ${email}`);
+    } catch (error) {
+      console.error(`Failed to send ${typeLabel.toLowerCase()} status email:`, error);
       // Don't throw error as it's not critical
     }
   }

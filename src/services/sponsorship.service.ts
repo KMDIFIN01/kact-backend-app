@@ -189,6 +189,16 @@ export class SponsorshipService {
       },
     });
 
+    // Send status notification email for APPROVED or REJECTED
+    if (sponsorshipStatus === 'APPROVED' || sponsorshipStatus === 'REJECTED') {
+      await this.emailService.sendApplicationStatusEmail(
+        updatedSponsorship.email,
+        `${updatedSponsorship.firstName} ${updatedSponsorship.lastName}`,
+        'sponsorship',
+        sponsorshipStatus.toLowerCase() as 'approved' | 'rejected'
+      );
+    }
+
     return updatedSponsorship;
   }
 
@@ -253,6 +263,18 @@ export class SponsorshipService {
         },
       },
     });
+
+    // Send status notification emails for APPROVED or REJECTED
+    if (sponsorshipStatus === 'APPROVED' || sponsorshipStatus === 'REJECTED') {
+      for (const sponsorship of updatedSponsorships) {
+        await this.emailService.sendApplicationStatusEmail(
+          sponsorship.email,
+          `${sponsorship.firstName} ${sponsorship.lastName}`,
+          'sponsorship',
+          sponsorshipStatus.toLowerCase() as 'approved' | 'rejected'
+        );
+      }
+    }
 
     return {
       count: result.count,
