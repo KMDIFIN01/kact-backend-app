@@ -206,7 +206,7 @@ export class MembershipService {
         updatedMembership.email,
         `${updatedMembership.firstName} ${updatedMembership.lastName}`,
         'membership',
-        membershipStatus.toLowerCase() as 'approved' | 'rejected'
+        membershipStatus as 'APPROVED' | 'REJECTED'
       );
     }
 
@@ -283,7 +283,7 @@ export class MembershipService {
           membership.email,
           `${membership.firstName} ${membership.lastName}`,
           'membership',
-          membershipStatus.toLowerCase() as 'approved' | 'rejected'
+          membershipStatus as 'APPROVED' | 'REJECTED'
         );
       }
     }

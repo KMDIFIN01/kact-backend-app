@@ -195,7 +195,7 @@ export class SponsorshipService {
         updatedSponsorship.email,
         `${updatedSponsorship.firstName} ${updatedSponsorship.lastName}`,
         'sponsorship',
-        sponsorshipStatus.toLowerCase() as 'approved' | 'rejected'
+        sponsorshipStatus as 'APPROVED' | 'REJECTED'
       );
     }
 
@@ -271,7 +271,7 @@ export class SponsorshipService {
           sponsorship.email,
           `${sponsorship.firstName} ${sponsorship.lastName}`,
           'sponsorship',
-          sponsorshipStatus.toLowerCase() as 'approved' | 'rejected'
+          sponsorshipStatus as 'APPROVED' | 'REJECTED'
         );
       }
     }

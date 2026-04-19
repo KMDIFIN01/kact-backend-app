@@ -87,9 +87,9 @@ export class EmailService {
     }
   }
 
-  async sendApplicationStatusEmail(email: string, name: string, applicationType: 'membership' | 'sponsorship', status: 'approved' | 'rejected'): Promise<void> {
+  async sendApplicationStatusEmail(email: string, name: string, applicationType: 'membership' | 'sponsorship', status: 'APPROVED' | 'REJECTED'): Promise<void> {
     const typeLabel = applicationType === 'membership' ? 'Membership' : 'Sponsorship';
-    const statusLabel = status === 'approved' ? 'Approved' : 'Rejected';
+    const statusLabel = status === 'APPROVED' ? 'Approved' : 'Rejected';
     try {
       await this.resend.emails.send({
         from: `${emailConfig.fromName} <${emailConfig.fromEmail}>`,
