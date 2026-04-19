@@ -99,11 +99,10 @@ export class AuthService {
       throw new UnauthorizedError('Invalid credentials');
     }
 
-    // Check if email is verified (optional - allow login but warn)
-    // Uncomment below to require verification before login
-    // if (!user.emailVerified) {
-    //   throw new UnauthorizedError('Please verify your email before logging in');
-    // }
+    // Check if email is verified
+    if (!user.emailVerified) {
+      throw new UnauthorizedError('Your account has been created but your email is not yet verified. A verification email was sent to your email address. Please check your inbox and click the verification link from KACT to activate your account.');
+    }
 
     // Generate tokens
     const accessToken = this.tokenService.generateAccessToken(user.id);
