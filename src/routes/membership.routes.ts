@@ -30,6 +30,13 @@ router.post(
 );
 
 /**
+ * @route   GET /api/v1/membership/me
+ * @desc    Get current authenticated user's membership status
+ * @access  Private
+ */
+router.get('/me', authenticate, membershipController.getMyMembershipStatus);
+
+/**
  * @route   GET /api/v1/membership
  * @desc    Get all membership applications
  * @access  Private (Admin only)

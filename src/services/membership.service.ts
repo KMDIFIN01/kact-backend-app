@@ -34,6 +34,17 @@ interface UpdateMembershipStatusInput {
   approvedBy: string;
 }
 
+interface CurrentUserMembershipStatus {
+  isApprovedMember: boolean;
+  membership: {
+    id: string;
+    membershipType: string;
+    membershipStatus: string;
+    applicationDate: Date;
+    approvedDate: Date | null;
+  } | null;
+}
+
 export class MembershipService {
   private emailService: EmailService;
 
@@ -534,5 +545,52 @@ export class MembershipService {
     });
 
     return memberships;
+  }
+
+  /**
+   * Get current user's membership status by email
+   */
+  async getCurrentUserMembershipStatus(email: string): Promise<CurrentUserMembershipStatus> {
+    const normalizedEmail = email.trim();
+
+    const approvedMembership = await prisma.membership.findFirst({
+      where: {
+        email: {
+          equals: normalizedEmail,
+          mode: 'insensitive',
+        },
+        membershipStatus: 'APPROVED',
+      },
+      orderBy: [{ approvedDate: 'desc' }, { applicationDate: 'desc' }],
+      select: {
+        id: true,
+        membershipType: true,
+        membershipStatus: true,
+        applicationDate: true,
+        approvedDate: true,
+      },
+    });
+
+    const membership = approvedMembership ?? await prisma.membership.findFirst({
+      where: {
+        email: {
+          equals: normalizedEmail,
+          mode: 'insensitive',
+        },
+      },
+      orderBy: [{ applicationDate: 'desc' }],
+      select: {
+        id: true,
+        membershipType: true,
+        membershipStatus: true,
+        applicationDate: true,
+        approvedDate: true,
+      },
+    });
+
+    return {
+      isApprovedMember: membership?.membershipStatus === 'APPROVED',
+      membership: membership ?? null,
+    };
   }
 }

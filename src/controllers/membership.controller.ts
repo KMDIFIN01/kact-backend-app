@@ -210,4 +210,27 @@ export class MembershipController {
       next(error);
     }
   };
+
+  /**
+   * Get current authenticated user's membership status
+   */
+  getMyMembershipStatus = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userEmail = req.user?.email;
+
+      if (!userEmail) {
+        throw new BadRequestError('Authenticated user email is required');
+      }
+
+      const membershipStatus = await this.membershipService.getCurrentUserMembershipStatus(userEmail);
+
+      successResponse(
+        res,
+        membershipStatus,
+        'Current user membership status retrieved successfully'
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
 }
