@@ -34,7 +34,7 @@ const eventSelect = {
 export class EventService {
   async getAll() {
     return prisma.event.findMany({
-      orderBy: { date: 'asc' },
+      orderBy: { date: 'desc' },
       select: eventSelect,
     });
   }
