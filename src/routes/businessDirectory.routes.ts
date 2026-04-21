@@ -24,6 +24,7 @@ router.post('/', validate(createBusinessDirectoryValidator), controller.create);
  * @desc    Get approved business listings (public)
  * @access  Public
  */
+router.get('/', controller.getApproved);
 router.get('/public', controller.getApproved);
 
 /**
