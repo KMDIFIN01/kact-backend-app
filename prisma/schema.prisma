@@ -191,6 +191,7 @@ model Sponsorship {
   businessName      String            @map("business_name")
   businessType      String            @map("business_type")
   websiteUrl        String?           @map("website_url")
+  imageUrl          String?           @map("image_url")
   firstName         String            @map("first_name")
   lastName          String            @map("last_name")
   email             String
@@ -223,6 +224,7 @@ model BusinessDirectory {
   businessName    String                  @map("business_name")
   serviceCategory String                  @map("service_category")
   websiteUrl      String?                 @map("website_url")
+  imageUrl        String?                 @map("image_url")
   contactName     String?                 @map("contact_name")
   phone           String
   email           String

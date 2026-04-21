@@ -3,6 +3,7 @@ import { BusinessDirectoryController } from '@controllers/businessDirectory.cont
 import { authenticate } from '@middlewares/auth.middleware';
 import { requireAdmin } from '@middlewares/admin.middleware';
 import { validate } from '@middlewares/validate.middleware';
+import { galleryUpload } from '@middlewares/upload.middleware';
 import {
   createBusinessDirectoryValidator,
   updateBusinessDirectoryStatusValidator,
@@ -11,6 +12,13 @@ import {
 
 const router = Router();
 const controller = new BusinessDirectoryController();
+
+/**
+ * @route   POST /api/v1/business-directory/upload-image
+ * @desc    Upload an image for business directory listing
+ * @access  Public
+ */
+router.post('/upload-image', galleryUpload, controller.uploadImage);
 
 /**
  * @route   POST /api/v1/business-directory

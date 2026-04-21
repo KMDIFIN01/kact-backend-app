@@ -3,6 +3,7 @@ import { SponsorshipController } from '@controllers/sponsorship.controller';
 import { authenticate } from '@middlewares/auth.middleware';
 import { requireAdmin } from '@middlewares/admin.middleware';
 import { validate } from '@middlewares/validate.middleware';
+import { galleryUpload } from '@middlewares/upload.middleware';
 import {
   createSponsorshipValidator,
   updateSponsorshipStatusValidator,
@@ -15,6 +16,13 @@ import {
 
 const router = Router();
 const sponsorshipController = new SponsorshipController();
+
+/**
+ * @route   POST /api/v1/sponsorship/upload-image
+ * @desc    Upload an image for sponsorship
+ * @access  Public
+ */
+router.post('/upload-image', galleryUpload, sponsorshipController.uploadImage);
 
 /**
  * @route   POST /api/v1/sponsorship

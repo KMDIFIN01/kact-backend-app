@@ -1,4 +1,5 @@
 import prisma from '@config/database';
+import cloudinary from '@config/cloudinary';
 import { NotFoundError, BadRequestError } from '@utils/errors';
 import { PaymentType, SponsorshipStatus } from '../types/api';
 import { EmailService } from './email.service';
@@ -7,6 +8,7 @@ interface CreateSponsorshipInput {
   businessName: string;
   businessType: string;
   websiteUrl?: string;
+  imageUrl?: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -27,6 +29,34 @@ interface UpdateSponsorshipStatusInput {
   approvedBy: string;
 }
 
+const SPONSORSHIP_FOLDER = process.env.SPONSORSHIP_CLOUDINARY_FOLDER || 'kact/sponsorship';
+
+const selectFields = {
+  id: true,
+  businessName: true,
+  businessType: true,
+  websiteUrl: true,
+  imageUrl: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  phoneNumber: true,
+  address1: true,
+  address2: true,
+  city: true,
+  state: true,
+  zip: true,
+  sponsorshipType: true,
+  paymentType: true,
+  sponsorshipStatus: true,
+  applicationDate: true,
+  approvedDate: true,
+  approvedBy: true,
+  notes: true,
+  createdAt: true,
+  updatedAt: true,
+};
+
 export class SponsorshipService {
   private emailService: EmailService;
 
@@ -43,6 +73,7 @@ export class SponsorshipService {
         businessName: data.businessName,
         businessType: data.businessType,
         websiteUrl: data.websiteUrl || null,
+        imageUrl: data.imageUrl || null,
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
@@ -56,30 +87,7 @@ export class SponsorshipService {
         paymentType: data.paymentType,
         notes: data.notes || null,
       },
-      select: {
-        id: true,
-        businessName: true,
-        businessType: true,
-        websiteUrl: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phoneNumber: true,
-        address1: true,
-        address2: true,
-        city: true,
-        state: true,
-        zip: true,
-        sponsorshipType: true,
-        paymentType: true,
-        sponsorshipStatus: true,
-        applicationDate: true,
-        approvedDate: true,
-        approvedBy: true,
-        notes: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: selectFields,
     });
 
     // Send application submitted email
@@ -99,25 +107,7 @@ export class SponsorshipService {
     const sponsorships = await prisma.sponsorship.findMany({
       orderBy: { applicationDate: 'desc' },
       select: {
-        id: true,
-        businessName: true,
-        businessType: true,
-        websiteUrl: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phoneNumber: true,
-        address1: true,
-        address2: true,
-        city: true,
-        state: true,
-        zip: true,
-        sponsorshipType: true,
-        paymentType: true,
-        sponsorshipStatus: true,
-        applicationDate: true,
-        approvedDate: true,
-        notes: true,
+        ...selectFields,
         approvedByUser: {
           select: {
             id: true,
@@ -129,6 +119,63 @@ export class SponsorshipService {
     });
 
     return sponsorships;
+  }
+
+  async uploadImage(file: Express.Multer.File): Promise<string> {
+    if (!file) {
+      throw new BadRequestError('An image file is required');
+    }
+
+    return this.uploadToCloudinary(file);
+  }
+
+  async deleteImage(imageUrl: string): Promise<void> {
+    try {
+      const publicId = this.extractPublicId(imageUrl);
+      if (publicId) {
+        await cloudinary.uploader.destroy(publicId);
+      }
+    } catch (error) {
+      console.error('Failed to delete image from Cloudinary:', error);
+    }
+  }
+
+  private uploadToCloudinary(file: Express.Multer.File): Promise<string> {
+    const folder = SPONSORSHIP_FOLDER;
+
+    return new Promise<string>((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder, resource_type: 'image', use_filename: true, unique_filename: true },
+        (error: unknown, result: { secure_url?: string } | undefined) => {
+          if (error) {
+            reject(new BadRequestError('Failed to upload image to Cloudinary'));
+            return;
+          }
+
+          if (!result?.secure_url) {
+            reject(new BadRequestError('Failed to get upload URL from Cloudinary'));
+            return;
+          }
+
+          resolve(result.secure_url);
+        }
+      );
+
+      stream.end(file.buffer);
+    });
+  }
+
+  private extractPublicId(url: string): string | null {
+    try {
+      const parsed = new URL(url);
+      const uploadIndex = parsed.pathname.indexOf('/upload/');
+      if (uploadIndex === -1) return null;
+      const afterUpload = parsed.pathname.substring(uploadIndex + '/upload/'.length);
+      const withoutVersion = afterUpload.replace(/^v\d+\//, '');
+      return withoutVersion.replace(/\.[^.]+$/, '') || null;
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -160,25 +207,7 @@ export class SponsorshipService {
       where: { id },
       data: updateData,
       select: {
-        id: true,
-        businessName: true,
-        businessType: true,
-        websiteUrl: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phoneNumber: true,
-        address1: true,
-        address2: true,
-        city: true,
-        state: true,
-        zip: true,
-        sponsorshipType: true,
-        paymentType: true,
-        sponsorshipStatus: true,
-        applicationDate: true,
-        approvedDate: true,
-        notes: true,
+        ...selectFields,
         approvedByUser: {
           select: {
             id: true,

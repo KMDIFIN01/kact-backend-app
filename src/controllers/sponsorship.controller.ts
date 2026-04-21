@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { SponsorshipService } from '@services/sponsorship.service';
 import { successResponse, createdResponse } from '@utils/response';
 import { BadRequestError } from '@utils/errors';
+type MulterFile = Express.Multer.File;
 
 export class SponsorshipController {
   private sponsorshipService: SponsorshipService;
@@ -19,6 +20,7 @@ export class SponsorshipController {
         businessName,
         businessType,
         websiteUrl,
+        imageUrl,
         firstName,
         lastName,
         email,
@@ -37,6 +39,7 @@ export class SponsorshipController {
         businessName,
         businessType,
         websiteUrl,
+        imageUrl,
         firstName,
         lastName,
         email,
@@ -170,6 +173,24 @@ export class SponsorshipController {
   /**
    * Filter sponsorships by application date range
    */
+  /**
+   * Upload an image for sponsorship
+   */
+  uploadImage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const files = req.files as MulterFile[] | undefined;
+      const file = files?.[0] ?? (req.file as MulterFile | undefined);
+
+      if (!file) {
+        throw new BadRequestError('An image file is required');
+      }
+
+      const imageUrl = await this.sponsorshipService.uploadImage(file);
+      createdResponse(res, { imageUrl }, 'Image uploaded successfully');
+    } catch (error) {
+      next(error);
+    }
+  };
   filterByDateRange = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { startDate, endDate } = req.body;

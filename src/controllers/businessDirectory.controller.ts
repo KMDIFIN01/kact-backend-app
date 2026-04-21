@@ -4,6 +4,8 @@ import { successResponse, createdResponse } from '@utils/response';
 import { BadRequestError } from '@utils/errors';
 import { BusinessDirectoryStatus } from '../types/api';
 
+type MulterFile = Express.Multer.File;
+
 export class BusinessDirectoryController {
   private service: BusinessDirectoryService;
 
@@ -11,10 +13,26 @@ export class BusinessDirectoryController {
     this.service = new BusinessDirectoryService();
   }
 
+  uploadImage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const files = req.files as MulterFile[] | undefined;
+      const file = files?.[0] ?? (req.file as MulterFile | undefined);
+
+      if (!file) {
+        throw new BadRequestError('An image file is required');
+      }
+
+      const imageUrl = await this.service.uploadImage(file);
+      createdResponse(res, { imageUrl }, 'Image uploaded successfully');
+    } catch (error) {
+      next(error);
+    }
+  };
+
   create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { businessName, serviceCategory, websiteUrl, contactName, phone, email, address, notes } = req.body;
-      const listing = await this.service.create({ businessName, serviceCategory, websiteUrl, contactName, phone, email, address, notes });
+      const { businessName, serviceCategory, websiteUrl, contactName, phone, email, address, notes, imageUrl } = req.body;
+      const listing = await this.service.create({ businessName, serviceCategory, websiteUrl, contactName, phone, email, address, notes, imageUrl });
       createdResponse(res, { listing }, 'Business listing submitted successfully');
     } catch (error) {
       next(error);
