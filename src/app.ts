@@ -9,6 +9,7 @@ import { corsConfig } from '@config/cors';
 import { generalLimiter } from '@middlewares/rateLimiter.middleware';
 import { errorHandler, notFoundHandler } from '@middlewares/error.middleware';
 import routes from './routes/index';
+import webhookRoutes from './routes/webhook.routes';
 
 const app: Application = express();
 
@@ -75,6 +76,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Routes
+app.use('/api/webhooks', webhookRoutes);
 app.use('/api/v1', routes); // Routes come AFTER
 
 // Error handling
