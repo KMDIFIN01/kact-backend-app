@@ -6,6 +6,8 @@ import membershipRoutes from './membership.routes';
 import eventRoutes from './event.routes';
 import sponsorshipRoutes from './sponsorship.routes';
 import analyticsRoutes from './analytics.routes';
+import businessDirectoryRoutes from './businessDirectory.routes';
+import sponsorFlyerRoutes from './sponsorFlyer.routes';
 import { getCsrfToken, csrfTokenHandler } from '@middlewares/csrf.middleware';
 
 const router = Router();
@@ -31,5 +33,7 @@ router.use('/membership', membershipRoutes);
 router.use('/events', eventRoutes);
 router.use('/sponsorship', sponsorshipRoutes);
 router.use('/analytics', analyticsRoutes);
+router.use('/business-directory', businessDirectoryRoutes);
+router.use('/sponsor-flyers', sponsorFlyerRoutes);
 
 export default router;

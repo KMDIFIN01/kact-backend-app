@@ -103,6 +103,20 @@ export enum SponsorshipStatus {
   EXPIRED = 'EXPIRED',
 }
 
+export enum BusinessDirectoryStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+}
+
+export enum SponsorFlyerTier {
+  DIAMOND = 'DIAMOND',
+  PLATINUM = 'PLATINUM',
+  GOLD = 'GOLD',
+  SILVER = 'SILVER',
+  BRONZE = 'BRONZE',
+}
+
 export interface Sponsorship {
   id: string;
   businessName: string;

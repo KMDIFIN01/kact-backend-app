@@ -45,6 +45,20 @@ enum SponsorshipStatus {
   EXPIRED
 }
 
+enum BusinessDirectoryStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum SponsorFlyerTier {
+  DIAMOND
+  PLATINUM
+  GOLD
+  SILVER
+  BRONZE
+}
+
 model User {
   id                      String         @id @default(cuid())
   email                   String         @unique
@@ -70,6 +84,8 @@ model User {
   galleryPhotos           GalleryPhoto[]
   memberships             Membership[]
   sponsorships            Sponsorship[]
+  businessDirectoryItems  BusinessDirectory[]
+  sponsorFlyers           SponsorFlyer[]
   pageVisits              PageVisit[]
   userActivities          UserActivity[]
 
@@ -200,6 +216,43 @@ model Sponsorship {
   @@index([applicationDate])
   @@index([approvedBy])
   @@map("sponsorships")
+}
+
+model BusinessDirectory {
+  id              String                  @id @default(cuid())
+  businessName    String                  @map("business_name")
+  serviceCategory String                  @map("service_category")
+  websiteUrl      String?                 @map("website_url")
+  contactName     String?                 @map("contact_name")
+  phone           String
+  email           String
+  address         String
+  status          BusinessDirectoryStatus @default(PENDING)
+  approvedDate    DateTime?               @map("approved_date")
+  approvedBy      String?                 @map("approved_by")
+  approvedByUser  User?                   @relation(fields: [approvedBy], references: [id], onDelete: SetNull)
+  notes           String?
+  createdAt       DateTime                @default(now()) @map("created_at")
+  updatedAt       DateTime                @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([serviceCategory])
+  @@index([approvedBy])
+  @@map("business_directory")
+}
+
+model SponsorFlyer {
+  id           String            @id @default(cuid())
+  tier         SponsorFlyerTier
+  flyerUrl     String            @map("flyer_url")
+  title        String?
+  uploadedBy   String            @map("uploaded_by")
+  uploadedByUser User            @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+  createdAt    DateTime          @default(now()) @map("created_at")
+
+  @@index([tier])
+  @@index([uploadedBy])
+  @@map("sponsor_flyers")
 }
 
 model PageVisit {
