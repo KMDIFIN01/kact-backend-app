@@ -113,6 +113,15 @@ export class BusinessDirectoryService {
     return prisma.businessDirectory.count({ where: { status: 'PENDING' } });
   }
 
+  async delete(id: string): Promise<void> {
+    const existing = await prisma.businessDirectory.findUnique({ where: { id } });
+    if (!existing) {
+      throw new NotFoundError('Business listing not found');
+    }
+
+    await prisma.businessDirectory.delete({ where: { id } });
+  }
+
   async uploadImage(file: Express.Multer.File): Promise<string> {
     if (!file) {
       throw new BadRequestError('An image file is required');

@@ -8,6 +8,7 @@ import {
   createBusinessDirectoryValidator,
   updateBusinessDirectoryStatusValidator,
   bulkUpdateBusinessDirectoryStatusValidator,
+  deleteBusinessDirectoryValidator,
 } from '../validators/businessDirectory.validator';
 
 const router = Router();
@@ -62,5 +63,12 @@ router.patch('/bulk/status', authenticate, requireAdmin, validate(bulkUpdateBusi
  * @access  Private (Admin only)
  */
 router.patch('/:id/status', authenticate, requireAdmin, validate(updateBusinessDirectoryStatusValidator), controller.updateStatus);
+
+/**
+ * @route   DELETE /api/v1/business-directory/:id
+ * @desc    Delete a business listing
+ * @access  Private (Admin only)
+ */
+router.delete('/:id', authenticate, requireAdmin, validate(deleteBusinessDirectoryValidator), controller.delete);
 
 export default router;

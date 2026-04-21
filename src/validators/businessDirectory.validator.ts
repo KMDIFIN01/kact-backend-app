@@ -54,3 +54,7 @@ export const bulkUpdateBusinessDirectoryStatusValidator = [
     .notEmpty().withMessage('Status is required')
     .isIn(['PENDING', 'APPROVED', 'REJECTED']).withMessage('Invalid status value'),
 ];
+
+export const deleteBusinessDirectoryValidator = [
+  param('id').notEmpty().withMessage('Listing ID is required'),
+];
