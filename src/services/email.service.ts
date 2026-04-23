@@ -104,4 +104,57 @@ export class EmailService {
       // Don't throw error as it's not critical
     }
   }
+
+  async sendContactEmail(senderName: string, senderEmail: string, subject: string, message: string): Promise<void> {
+    const subjectLabel = subject
+      ? subject.charAt(0).toUpperCase() + subject.slice(1)
+      : 'General Inquiry';
+    try {
+      await this.resend.emails.send({
+        from: `${emailConfig.fromName} <${emailConfig.fromEmail}>`,
+        to: 'kmdifin01@gmail.com',
+        replyTo: senderEmail,
+        subject: `[KACT Contact] ${subjectLabel}`,
+        html: `<p><strong>From:</strong> ${senderName}</p><p><strong>Email:</strong> ${senderEmail}</p><p><strong>Subject:</strong> ${subjectLabel}</p><hr/><p>${message.replace(/\n/g, '<br/>')}</p>`,
+        text: `From: ${senderName}\nEmail: ${senderEmail}\nSubject: ${subjectLabel}\n\n${message}`,
+      });
+      console.log(`✉️ Contact email from ${senderEmail} sent to kmdifin01@gmail.com`);
+    } catch (error) {
+      console.error('Failed to send contact email:', error);
+      throw new Error('Failed to send contact email');
+    }
+  }
+
+  async sendFeedbackEmail(
+    senderName: string,
+    senderEmail: string,
+    subject: string,
+    rating: number,
+    message: string,
+  ): Promise<void> {
+    const stars = '★'.repeat(rating) + '☆'.repeat(10 - rating);
+    try {
+      await this.resend.emails.send({
+        from: `${emailConfig.fromName} <${emailConfig.fromEmail}>`,
+        to: 'kmdifin01@gmail.com',
+        replyTo: senderEmail,
+        subject: `[KACT Feedback] ${subject}`,
+        html: `
+          <h2 style="color:#0066B3;">KACT Community Feedback</h2>
+          <p><strong>From:</strong> ${senderName}</p>
+          <p><strong>Email:</strong> ${senderEmail}</p>
+          <p><strong>Subject:</strong> ${subject}</p>
+          <p><strong>Satisfaction Rating:</strong> ${rating}/10 &nbsp; ${stars}</p>
+          <hr/>
+          <p><strong>Feedback:</strong></p>
+          <p style="white-space:pre-wrap;">${message}</p>
+        `,
+        text: `KACT Community Feedback\n\nFrom: ${senderName}\nEmail: ${senderEmail}\nSubject: ${subject}\nRating: ${rating}/10\n\n${message}`,
+      });
+      console.log(`✉️ Feedback email from ${senderEmail} sent to kmdifin01@gmail.com`);
+    } catch (error) {
+      console.error('Failed to send feedback email:', error);
+      throw new Error('Failed to send feedback email');
+    }
+  }
 }

@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import authRoutes from './auth.routes';
 import userRoutes from './user.routes';
+import contactRoutes from './contact.routes';
+import feedbackRoutes from './feedback.routes';
 import galleryRoutes from './gallery.routes';
 import membershipRoutes from './membership.routes';
 import eventRoutes from './event.routes';
@@ -35,5 +37,7 @@ router.use('/sponsorship', sponsorshipRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/business-directory', businessDirectoryRoutes);
 router.use('/sponsor-flyers', sponsorFlyerRoutes);
+router.use('/contact', contactRoutes);
+router.use('/feedback', feedbackRoutes);
 
 export default router;
