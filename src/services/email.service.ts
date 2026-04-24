@@ -112,13 +112,13 @@ export class EmailService {
     try {
       await this.resend.emails.send({
         from: `${emailConfig.fromName} <${emailConfig.fromEmail}>`,
-        to: 'kmdifin01@gmail.com',
+        to: ['kmdifin01@gmail.com', 'mykact@gmail.com'],
         replyTo: senderEmail,
         subject: `[KACT Contact] ${subjectLabel}`,
         html: `<p><strong>From:</strong> ${senderName}</p><p><strong>Email:</strong> ${senderEmail}</p><p><strong>Subject:</strong> ${subjectLabel}</p><hr/><p>${message.replace(/\n/g, '<br/>')}</p>`,
         text: `From: ${senderName}\nEmail: ${senderEmail}\nSubject: ${subjectLabel}\n\n${message}`,
       });
-      console.log(`✉️ Contact email from ${senderEmail} sent to kmdifin01@gmail.com`);
+      console.log(`✉️ Contact email from ${senderEmail} sent to kmdifin01@gmail.com and mykact@gmail.com`);
     } catch (error) {
       console.error('Failed to send contact email:', error);
       throw new Error('Failed to send contact email');
@@ -136,7 +136,7 @@ export class EmailService {
     try {
       await this.resend.emails.send({
         from: `${emailConfig.fromName} <${emailConfig.fromEmail}>`,
-        to: 'kmdifin01@gmail.com',
+        to: ['kmdifin01@gmail.com', 'mykact@gmail.com'],
         replyTo: senderEmail,
         subject: `[KACT Feedback] ${subject}`,
         html: `
@@ -151,7 +151,7 @@ export class EmailService {
         `,
         text: `KACT Community Feedback\n\nFrom: ${senderName}\nEmail: ${senderEmail}\nSubject: ${subject}\nRating: ${rating}/10\n\n${message}`,
       });
-      console.log(`✉️ Feedback email from ${senderEmail} sent to kmdifin01@gmail.com`);
+      console.log(`✉️ Feedback email from ${senderEmail} sent to kmdifin01@gmail.com and mykact@gmail.com`);
     } catch (error) {
       console.error('Failed to send feedback email:', error);
       throw new Error('Failed to send feedback email');
