@@ -16,13 +16,9 @@ export const announcementEmailTemplate = (
 
   const attachmentsHtml = attachments.length > 0
     ? `<div style="margin-top: 28px; border-top: 1px solid #E5E7EB; padding-top: 20px;">
-        <p style="font-size: 13px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 14px;">Images</p>
         ${attachments.map((a) => `
         <div style="margin-bottom: 20px;">
           <img src="${a.url}" alt="${a.filename}" style="max-width: 100%; border-radius: 8px; display: block; border: 1px solid #E5E7EB;" />
-          <a href="${a.url}" download="${a.filename}" style="display: inline-block; margin-top: 8px; padding: 6px 14px; background-color: #EFF6FF; color: #2563EB; font-size: 13px; font-weight: 600; border-radius: 6px; text-decoration: none; border: 1px solid #BFDBFE;">
-            ⬇ Download ${a.filename}
-          </a>
         </div>`).join('')}
       </div>`
     : '';

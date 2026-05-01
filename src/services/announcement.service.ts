@@ -67,11 +67,19 @@ export class AnnouncementService {
     );
 
     // PDFs stay as buffers — sent directly as Resend attachments (no Cloudinary)
-    const pdfAttachments = pdfFiles.map((file) => ({
-      filename: file.originalname,
-      content: file.buffer,
-      contentType: 'application/pdf' as const,
-    }));
+    // Images are also added as Resend attachments so recipients can download them
+    const resendAttachments = [
+      ...imageFiles.map((file) => ({
+        filename: file.originalname,
+        content: file.buffer,
+        contentType: file.mimetype as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
+      })),
+      ...pdfFiles.map((file) => ({
+        filename: file.originalname,
+        content: file.buffer,
+        contentType: 'application/pdf' as const,
+      })),
+    ];
 
     const emailSet = new Set<string>();
 
@@ -112,7 +120,7 @@ export class AnnouncementService {
             subject,
             html,
             text,
-            ...(pdfAttachments.length > 0 && { attachments: pdfAttachments }),
+            ...(resendAttachments.length > 0 && { attachments: resendAttachments }),
           })
         )
       );
