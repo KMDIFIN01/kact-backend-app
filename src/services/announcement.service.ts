@@ -6,6 +6,9 @@ import { announcementEmailTemplate, announcementEmailText } from '../templates/a
 const ANNOUNCEMENT_FROM = 'KACT Announcements <announcement@kactusa.org>';
 const BCC_CHUNK_SIZE = 50;
 
+// TODO: Remove after testing — overrides all recipients with test addresses
+const TEST_RECIPIENTS: string[] | null = ['kmdifin01@gmail.com', 'difinmathew@gmail.com'];
+
 export type AnnouncementRecipients = 'users' | 'members' | 'both';
 
 export interface AnnouncementResult {
@@ -44,7 +47,7 @@ export class AnnouncementService {
       }
     }
 
-    const allEmails = Array.from(emailSet);
+    const allEmails = TEST_RECIPIENTS ?? Array.from(emailSet);
     const totalRecipients = allEmails.length;
     let sentCount = 0;
     let failedCount = 0;
