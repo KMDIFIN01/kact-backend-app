@@ -558,19 +558,19 @@ export class MembershipService {
     middleName?: string;
     lastName: string;
     email: string;
-    phoneNumber: string;
-    address1: string;
-    address2?: string;
-    city: string;
-    state: string;
-    zip: string;
+    phoneNumber?: string;
+    address1?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
     membershipType: string;
     spouseFirstName?: string;
     spouseLastName?: string;
     spouseEmail?: string;
   }[]): Promise<{ imported: number; skipped: number; errors: { row: number; reason: string }[] }> {
     const VALID_MEMBERSHIP_TYPES = ['LIFETIME', 'FAMILY', 'INDIVIDUAL', 'STUDENT', 'DECADE'];
-    const REQUIRED_FIELDS = ['firstName', 'lastName', 'email', 'phoneNumber', 'address1', 'city', 'state', 'zip', 'membershipType'];
+    // phone, city, state, zip are not present in the CSV — they will default to N/A / 00000
+    const REQUIRED_FIELDS = ['firstName', 'lastName', 'email', 'membershipType'];
 
     const errors: { row: number; reason: string }[] = [];
     const validRows: (typeof rows[number] & { membershipType: string; rowNum: number })[] = [];
@@ -605,12 +605,12 @@ export class MembershipService {
             middleName: row.middleName ? String(row.middleName).trim() : null,
             lastName: String(row.lastName).trim(),
             email: String(row.email).trim(),
-            phoneNumber: String(row.phoneNumber).trim(),
-            address1: String(row.address1).trim(),
-            address2: row.address2 ? String(row.address2).trim() : null,
-            city: String(row.city).trim(),
-            state: String(row.state).trim(),
-            zip: String(row.zip).trim(),
+            phoneNumber: row.phoneNumber ? String(row.phoneNumber).trim() : 'N/A',
+            address1: row.address1 ? String(row.address1).trim() : 'N/A',
+            address2: null,
+            city: row.city ? String(row.city).trim() : 'N/A',
+            state: row.state ? String(row.state).trim() : 'N/A',
+            zip: row.zip ? String(row.zip).trim() : '00000',
             membershipType: row.membershipType as any,
             paymentType: 'CASH',
             membershipStatus: 'APPROVED',
