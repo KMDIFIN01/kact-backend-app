@@ -10,6 +10,7 @@ import sponsorshipRoutes from './sponsorship.routes';
 import analyticsRoutes from './analytics.routes';
 import businessDirectoryRoutes from './businessDirectory.routes';
 import sponsorFlyerRoutes from './sponsorFlyer.routes';
+import announcementRoutes from './announcement.routes';
 import { getCsrfToken, csrfTokenHandler } from '@middlewares/csrf.middleware';
 
 const router = Router();
@@ -39,5 +40,6 @@ router.use('/business-directory', businessDirectoryRoutes);
 router.use('/sponsor-flyers', sponsorFlyerRoutes);
 router.use('/contact', contactRoutes);
 router.use('/feedback', feedbackRoutes);
+router.use('/announcement', announcementRoutes);
 
 export default router;
