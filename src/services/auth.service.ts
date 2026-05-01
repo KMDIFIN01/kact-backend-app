@@ -10,6 +10,7 @@ interface RegisterData {
   email: string;
   password: string;
   firstName: string;
+  middleName?: string;
   lastName: string;
   phone?: string;
   address1: string;
@@ -34,7 +35,7 @@ export class AuthService {
   }
 
   async register(data: RegisterData) {
-    const { email, password, firstName, lastName, phone, address1, address2, city, state, zip } = data;
+    const { email, password, firstName, middleName, lastName, phone, address1, address2, city, state, zip } = data;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -56,8 +57,9 @@ export class AuthService {
         email,
         password: hashedPassword,
         firstName,
+        middleName,
         lastName,
-        name: `${firstName} ${lastName}`,
+        name: middleName ? `${firstName} ${middleName} ${lastName}` : `${firstName} ${lastName}`,
         phone,
         address1,
         address2,
@@ -71,6 +73,7 @@ export class AuthService {
         id: true,
         email: true,
         firstName: true,
+        middleName: true,
         lastName: true,
         name: true,
         emailVerified: true,

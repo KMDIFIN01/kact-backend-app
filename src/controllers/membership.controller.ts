@@ -17,6 +17,7 @@ export class MembershipController {
     try {
       const {
         firstName,
+        middleName,
         lastName,
         email,
         phoneNumber,
@@ -33,6 +34,7 @@ export class MembershipController {
 
       const membership = await this.membershipService.createMembership({
         firstName,
+        middleName,
         lastName,
         email,
         phoneNumber,

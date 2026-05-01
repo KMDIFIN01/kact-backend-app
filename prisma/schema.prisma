@@ -64,6 +64,7 @@ model User {
   email                   String         @unique
   password                String         @map("password_hash")
   firstName               String?        @map("first_name")
+  middleName              String?        @map("middle_name")
   lastName                String?        @map("last_name")
   name                    String?
   phone                   String?
@@ -127,6 +128,7 @@ model RefreshToken {
 model Membership {
   id               String           @id @default(cuid())
   firstName        String           @map("first_name")
+  middleName       String?          @map("middle_name")
   lastName         String           @map("last_name")
   email            String
   phoneNumber      String           @map("phone_number")

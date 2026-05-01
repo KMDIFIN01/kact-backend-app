@@ -7,6 +7,11 @@ export const createMembershipValidator = [
     .withMessage('First name is required')
     .isLength({ min: 1, max: 100 })
     .withMessage('First name must be between 1 and 100 characters'),
+  body('middleName')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('Middle name must be 100 characters or less'),
   body('lastName')
     .trim()
     .notEmpty()

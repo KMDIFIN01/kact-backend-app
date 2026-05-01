@@ -17,6 +17,11 @@ export const registerValidator = [
     .trim()
     .isLength({ min: 2, max: 50 })
     .withMessage('First name must be between 2 and 50 characters'),
+  body('middleName')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isLength({ max: 50 })
+    .withMessage('Middle name must be 50 characters or less'),
   body('lastName')
     .trim()
     .isLength({ min: 2, max: 50 })

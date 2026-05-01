@@ -14,6 +14,7 @@ interface FamilyMemberInput {
 
 interface CreateMembershipInput {
   firstName: string;
+  middleName?: string;
   lastName: string;
   email: string;
   phoneNumber: string;
@@ -59,6 +60,7 @@ export class MembershipService {
     const membership = await prisma.membership.create({
       data: {
         firstName: data.firstName,
+        middleName: data.middleName || null,
         lastName: data.lastName,
         email: data.email,
         phoneNumber: data.phoneNumber,
@@ -86,6 +88,7 @@ export class MembershipService {
       select: {
         id: true,
         firstName: true,
+        middleName: true,
         lastName: true,
         email: true,
         phoneNumber: true,
