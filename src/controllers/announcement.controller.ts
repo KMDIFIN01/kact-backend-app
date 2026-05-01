@@ -33,7 +33,8 @@ export class AnnouncementController {
       const result = await this.announcementService.sendAnnouncement(
         subject.trim(),
         body.trim(),
-        recipients as AnnouncementRecipients
+        recipients as AnnouncementRecipients,
+        (req.files as Express.Multer.File[]) ?? []
       );
 
       successResponse(res, result, 'Announcement sent successfully');

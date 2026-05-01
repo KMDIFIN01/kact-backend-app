@@ -50,3 +50,35 @@ export const galleryUploadConfig = {
   maxFiles,
   allowedMimeTypes,
 };
+
+// ── Announcement attachments (images + PDF, max 5 files, 10 MB each) ──
+
+const ANNOUNCEMENT_ALLOWED_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'application/pdf',
+];
+
+const announcementUploader = multer({
+  storage,
+  fileFilter: (_req: Request, file: MulterFile, cb: FileFilterCallback) => {
+    if (!ANNOUNCEMENT_ALLOWED_TYPES.includes(file.mimetype)) {
+      cb(new BadRequestError('Only images (JPEG, PNG, GIF, WebP) and PDF files are allowed'));
+      return;
+    }
+    cb(null, true);
+  },
+  limits: { fileSize: 10 * 1024 * 1024, files: 5 },
+});
+
+export const announcementUpload = (req: Request, res: Response, next: NextFunction): void => {
+  announcementUploader.array('attachments', 5)(req, res, (err: unknown) => {
+    if (err instanceof Error) {
+      next(new BadRequestError(err.message));
+      return;
+    }
+    next();
+  });
+};

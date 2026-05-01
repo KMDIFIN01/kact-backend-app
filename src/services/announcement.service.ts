@@ -1,15 +1,22 @@
 import { Resend } from 'resend';
 import { PrismaClient } from '@prisma/client';
 import { emailConfig } from '@config/email';
+import cloudinary from '@config/cloudinary';
 import { announcementEmailTemplate, announcementEmailText } from '../templates/announcementEmail';
 
 const ANNOUNCEMENT_FROM = 'Kerala Association of Connecticut <announcement@kactusa.org>';
-const BCC_CHUNK_SIZE = 50;
+const BATCH_SIZE = 50;
+const ATTACHMENT_FOLDER = 'kact/announcements';
 
 // TODO: Remove after testing — overrides all recipients with test addresses
 const TEST_RECIPIENTS: string[] | null = ['kmdifin01@gmail.com', 'difinmathew@gmail.com'];
 
 export type AnnouncementRecipients = 'users' | 'members' | 'both';
+
+export interface AnnouncementImageAttachment {
+  url: string;
+  filename: string;
+}
 
 export interface AnnouncementResult {
   totalRecipients: number;
@@ -26,11 +33,46 @@ export class AnnouncementService {
     this.prisma = new PrismaClient();
   }
 
+  private uploadToCloudinary(file: Express.Multer.File): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: ATTACHMENT_FOLDER, resource_type: 'image', use_filename: true, unique_filename: true },
+        (error: unknown, result: { secure_url?: string } | undefined) => {
+          if (error || !result?.secure_url) {
+            reject(error || new Error('Cloudinary upload failed'));
+            return;
+          }
+          resolve(result.secure_url);
+        }
+      );
+      stream.end(file.buffer);
+    });
+  }
+
   async sendAnnouncement(
     subject: string,
     body: string,
-    recipients: AnnouncementRecipients
+    recipients: AnnouncementRecipients,
+    files: Express.Multer.File[] = []
   ): Promise<AnnouncementResult> {
+    const imageFiles = files.filter((f) => f.mimetype.startsWith('image/'));
+    const pdfFiles = files.filter((f) => f.mimetype === 'application/pdf');
+
+    // Upload images to Cloudinary for inline embedding
+    const inlineImages: AnnouncementImageAttachment[] = await Promise.all(
+      imageFiles.map(async (file) => ({
+        url: await this.uploadToCloudinary(file),
+        filename: file.originalname,
+      }))
+    );
+
+    // PDFs stay as buffers — sent directly as Resend attachments (no Cloudinary)
+    const pdfAttachments = pdfFiles.map((file) => ({
+      filename: file.originalname,
+      content: file.buffer,
+      contentType: 'application/pdf' as const,
+    }));
+
     const emailSet = new Set<string>();
 
     if (recipients === 'users' || recipients === 'both') {
@@ -56,12 +98,12 @@ export class AnnouncementService {
       return { totalRecipients: 0, sentCount: 0, failedCount: 0 };
     }
 
-    const html = announcementEmailTemplate(subject, body);
+    const html = announcementEmailTemplate(subject, body, inlineImages);
     const text = announcementEmailText(subject, body);
 
     // Send individual emails in parallel batches so each recipient sees only their own address in To
-    for (let i = 0; i < allEmails.length; i += BCC_CHUNK_SIZE) {
-      const batch = allEmails.slice(i, i + BCC_CHUNK_SIZE);
+    for (let i = 0; i < allEmails.length; i += BATCH_SIZE) {
+      const batch = allEmails.slice(i, i + BATCH_SIZE);
       const results = await Promise.allSettled(
         batch.map((email) =>
           this.resend.emails.send({
@@ -70,6 +112,7 @@ export class AnnouncementService {
             subject,
             html,
             text,
+            ...(pdfAttachments.length > 0 && { attachments: pdfAttachments }),
           })
         )
       );
