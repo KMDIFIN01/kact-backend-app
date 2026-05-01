@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { MembershipService } from '@services/membership.service';
 import { successResponse, createdResponse } from '@utils/response';
-import { BadRequestError } from '@utils/errors';
+import { BadRequestError, TypeChangeConfirmationError } from '@utils/errors';
 
 export class MembershipController {
   private membershipService: MembershipService;
@@ -30,6 +30,7 @@ export class MembershipController {
         paymentType,
         notes,
         familyMembers,
+        confirmTypeChange,
       } = req.body;
 
       const membership = await this.membershipService.createMembership({
@@ -47,10 +48,21 @@ export class MembershipController {
         paymentType,
         notes,
         familyMembers,
+        confirmTypeChange: confirmTypeChange === true,
       });
 
       createdResponse(res, { membership }, 'Membership application created successfully');
     } catch (error) {
+      if (error instanceof TypeChangeConfirmationError) {
+        res.status(409).json({
+          success: false,
+          requiresTypeChangeConfirmation: true,
+          existingType: error.existingType,
+          requestedType: error.requestedType,
+          message: error.message,
+        });
+        return;
+      }
       next(error);
     }
   };

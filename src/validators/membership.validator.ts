@@ -75,6 +75,10 @@ export const createMembershipValidator = [
     .trim()
     .isLength({ max: 1000 })
     .withMessage('Notes must be 1000 characters or less'),
+  body('confirmTypeChange')
+    .optional()
+    .isBoolean()
+    .withMessage('confirmTypeChange must be a boolean'),
   body('familyMembers')
     .optional()
     .isArray({ max: 4 })

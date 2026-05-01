@@ -144,6 +144,7 @@ model Membership {
   approvedDate     DateTime?        @map("approved_date")
   approvedBy       String?          @map("approved_by")
   approvedByUser   User?            @relation(fields: [approvedBy], references: [id], onDelete: SetNull)
+  expirationDate   DateTime?        @map("expiration_date")
   notes            String?
   familyMembers    FamilyMember[]
   createdAt        DateTime         @default(now()) @map("created_at")

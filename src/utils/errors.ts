@@ -42,6 +42,17 @@ export class ConflictError extends AppError {
   }
 }
 
+export class TypeChangeConfirmationError extends AppError {
+  public readonly existingType: string;
+  public readonly requestedType: string;
+
+  constructor(existingType: string, requestedType: string) {
+    super('Membership type change requires confirmation', 409);
+    this.existingType = existingType;
+    this.requestedType = requestedType;
+  }
+}
+
 export class InternalServerError extends AppError {
   constructor(message: string = 'Internal Server Error') {
     super(message, 500);

@@ -1,5 +1,5 @@
 import prisma from '@config/database';
-import { NotFoundError, BadRequestError } from '@utils/errors';
+import { NotFoundError, BadRequestError, TypeChangeConfirmationError } from '@utils/errors';
 import { MembershipType, PaymentType, MembershipStatus, FamilyMemberType } from '../types/api';
 import { EmailService } from './email.service';
 
@@ -27,6 +27,7 @@ interface CreateMembershipInput {
   paymentType: PaymentType;
   notes?: string;
   familyMembers?: FamilyMemberInput[];
+  confirmTypeChange?: boolean;
 }
 
 interface UpdateMembershipStatusInput {
@@ -43,6 +44,7 @@ interface CurrentUserMembershipStatus {
     membershipStatus: string;
     applicationDate: Date;
     approvedDate: Date | null;
+    expirationDate: Date | null;
   } | null;
 }
 
@@ -54,15 +56,192 @@ export class MembershipService {
   }
 
   /**
-   * Create a new membership application
+   * Calculate expiration date based on membership type.
+   *
+   * Rules:
+   *   LIFETIME  → 9999-12-31
+   *   DECADE    → Aug 31 of (base year + 9)  using the 3-month window below
+   *   All other → Aug 31 of base year
+   *
+   * 3-month window: if today >= June 1 of the upcoming Aug-31 year → base year += 1
+   * (i.e., joining within 3 months of Aug 31 extends validity to the following year)
+   */
+  private calculateExpirationDate(membershipType: string, today: Date = new Date()): Date {
+    if (membershipType === 'LIFETIME') {
+      return new Date('9999-12-31T00:00:00.000Z');
+    }
+
+    // Find the nearest upcoming Aug 31 (target year)
+    const year = today.getFullYear();
+    const aug31ThisYear = new Date(year, 7, 31); // month 7 = August (0-indexed)
+    let targetAug31Year = today > aug31ThisYear ? year + 1 : year;
+
+    // If today is on or after June 1 of the target year → push to the year after
+    const threeMonthsBefore = new Date(targetAug31Year, 5, 1); // June 1
+    const expiryYear = today >= threeMonthsBefore ? targetAug31Year + 1 : targetAug31Year;
+
+    if (membershipType === 'DECADE') {
+      return new Date(expiryYear + 9, 7, 31);
+    }
+
+    // INDIVIDUAL, FAMILY, STUDENT
+    return new Date(expiryYear, 7, 31);
+  }
+
+  /** Shared select shape returned for all membership queries */
+  private get membershipSelect() {
+    return {
+      id: true,
+      firstName: true,
+      middleName: true,
+      lastName: true,
+      email: true,
+      phoneNumber: true,
+      address1: true,
+      address2: true,
+      city: true,
+      state: true,
+      zip: true,
+      membershipType: true,
+      paymentType: true,
+      membershipStatus: true,
+      applicationDate: true,
+      approvedDate: true,
+      approvedBy: true,
+      expirationDate: true,
+      notes: true,
+      familyMembers: true,
+      createdAt: true,
+      updatedAt: true,
+    } as const;
+  }
+
+  /** Shared select shape for admin queries (includes approvedByUser relation) */
+  private get membershipSelectWithApprover() {
+    return {
+      id: true,
+      firstName: true,
+      middleName: true,
+      lastName: true,
+      email: true,
+      phoneNumber: true,
+      address1: true,
+      address2: true,
+      city: true,
+      state: true,
+      zip: true,
+      membershipType: true,
+      paymentType: true,
+      membershipStatus: true,
+      applicationDate: true,
+      approvedDate: true,
+      approvedBy: true,
+      expirationDate: true,
+      notes: true,
+      familyMembers: true,
+      createdAt: true,
+      updatedAt: true,
+      approvedByUser: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    } as const;
+  }
+
+  /**
+   * Create a new membership application, or renew/update an existing one.
+   *
+   * Renewal logic (matched by email, case-insensitive):
+   *   - Same type      → update the existing record, recalculate expiry, status = PENDING
+   *   - Different type, confirmTypeChange not set → throw TypeChangeConfirmationError (409)
+   *   - Different type, confirmTypeChange = true  → update with new type + recalculated expiry
+   *   - No existing record → create new record
+   *
+   * Family members: if the new type is FAMILY or LIFETIME and familyMembers are provided,
+   * existing family members are deleted and recreated.
    */
   async createMembership(data: CreateMembershipInput) {
+    const normalizedEmail = data.email.trim().toLowerCase();
+    const expirationDate = this.calculateExpirationDate(data.membershipType);
+
+    // Helper: build family members create payload
+    const buildFamilyCreate = (members: FamilyMemberInput[]) =>
+      members.map(fm => ({
+        type: fm.type,
+        firstName: fm.firstName,
+        lastName: fm.lastName,
+        email: fm.email || null,
+        phoneNumber: fm.phoneNumber || null,
+        age: fm.age ?? null,
+      }));
+
+    // Check for existing membership by email
+    const existingMembership = await prisma.membership.findFirst({
+      where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
+      orderBy: { applicationDate: 'desc' },
+      select: { id: true, membershipType: true, membershipStatus: true },
+    });
+
+    if (existingMembership) {
+      const sameType = existingMembership.membershipType === data.membershipType;
+
+      // Require explicit confirmation when changing membership type
+      if (!sameType && !data.confirmTypeChange) {
+        throw new TypeChangeConfirmationError(existingMembership.membershipType, data.membershipType);
+      }
+
+      // For FAMILY / LIFETIME renewal or upgrade: refresh family members
+      const acceptsFamilyMembers = data.membershipType === 'FAMILY' || data.membershipType === 'LIFETIME';
+      if (acceptsFamilyMembers && data.familyMembers && data.familyMembers.length > 0) {
+        await prisma.familyMember.deleteMany({ where: { membershipId: existingMembership.id } });
+      }
+
+      const renewedMembership = await prisma.membership.update({
+        where: { id: existingMembership.id },
+        data: {
+          firstName: data.firstName,
+          middleName: data.middleName || null,
+          lastName: data.lastName,
+          email: normalizedEmail,
+          phoneNumber: data.phoneNumber,
+          address1: data.address1,
+          address2: data.address2 || null,
+          city: data.city,
+          state: data.state,
+          zip: data.zip,
+          membershipType: data.membershipType,
+          paymentType: data.paymentType,
+          notes: data.notes || null,
+          membershipStatus: 'PENDING',
+          approvedDate: null,
+          approvedBy: null,
+          expirationDate,
+          ...(acceptsFamilyMembers && data.familyMembers && data.familyMembers.length > 0
+            ? { familyMembers: { create: buildFamilyCreate(data.familyMembers) } }
+            : {}),
+        },
+        select: this.membershipSelect,
+      });
+
+      await this.emailService.sendApplicationSubmittedEmail(
+        data.email,
+        `${data.firstName} ${data.lastName}`,
+        'membership'
+      );
+
+      return renewedMembership;
+    }
+
+    // No existing membership — create a new record
     const membership = await prisma.membership.create({
       data: {
         firstName: data.firstName,
         middleName: data.middleName || null,
         lastName: data.lastName,
-        email: data.email,
+        email: normalizedEmail,
         phoneNumber: data.phoneNumber,
         address1: data.address1,
         address2: data.address2 || null,
@@ -72,45 +251,14 @@ export class MembershipService {
         membershipType: data.membershipType,
         paymentType: data.paymentType,
         notes: data.notes || null,
-        ...(data.familyMembers && data.familyMembers.length > 0 ? {
-          familyMembers: {
-            create: data.familyMembers.map(fm => ({
-              type: fm.type,
-              firstName: fm.firstName,
-              lastName: fm.lastName,
-              email: fm.email || null,
-              phoneNumber: fm.phoneNumber || null,
-              age: fm.age ?? null,
-            })),
-          },
-        } : {}),
+        expirationDate,
+        ...(data.familyMembers && data.familyMembers.length > 0
+          ? { familyMembers: { create: buildFamilyCreate(data.familyMembers) } }
+          : {}),
       },
-      select: {
-        id: true,
-        firstName: true,
-        middleName: true,
-        lastName: true,
-        email: true,
-        phoneNumber: true,
-        address1: true,
-        address2: true,
-        city: true,
-        state: true,
-        zip: true,
-        membershipType: true,
-        paymentType: true,
-        membershipStatus: true,
-        applicationDate: true,
-        approvedDate: true,
-        approvedBy: true,
-        notes: true,
-        familyMembers: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: this.membershipSelect,
     });
 
-    // Send application submitted email
     await this.emailService.sendApplicationSubmittedEmail(
       data.email,
       `${data.firstName} ${data.lastName}`,
@@ -126,31 +274,7 @@ export class MembershipService {
   async getAllMemberships() {
     const memberships = await prisma.membership.findMany({
       orderBy: { applicationDate: 'desc' },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phoneNumber: true,
-        address1: true,
-        address2: true,
-        city: true,
-        state: true,
-        zip: true,
-        membershipType: true,
-        membershipStatus: true,
-        applicationDate: true,
-        approvedDate: true,
-        notes: true,
-        familyMembers: true,
-        approvedByUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
+      select: this.membershipSelectWithApprover,
     });
 
     return memberships;
@@ -187,31 +311,7 @@ export class MembershipService {
     const updatedMembership = await prisma.membership.update({
       where: { id },
       data: updateData,
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phoneNumber: true,
-        address1: true,
-        address2: true,
-        city: true,
-        state: true,
-        zip: true,
-        membershipType: true,
-        membershipStatus: true,
-        applicationDate: true,
-        approvedDate: true,
-        notes: true,
-        familyMembers: true,
-        approvedByUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
+      select: this.membershipSelectWithApprover,
     });
 
     // Send status notification email for APPROVED or REJECTED
@@ -258,36 +358,8 @@ export class MembershipService {
 
     // Fetch updated memberships with full details
     const updatedMemberships = await prisma.membership.findMany({
-      where: {
-        id: {
-          in: ids,
-        },
-      },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phoneNumber: true,
-        address1: true,
-        address2: true,
-        city: true,
-        state: true,
-        zip: true,
-        membershipType: true,
-        membershipStatus: true,
-        applicationDate: true,
-        approvedDate: true,
-        notes: true,
-        familyMembers: true,
-        approvedByUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
+      where: { id: { in: ids } },
+      select: this.membershipSelectWithApprover,
     });
 
     // Send status notification emails for APPROVED or REJECTED
@@ -315,31 +387,7 @@ export class MembershipService {
     const memberships = await prisma.membership.findMany({
       where: { membershipStatus: status },
       orderBy: { applicationDate: 'desc' },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phoneNumber: true,
-        address1: true,
-        address2: true,
-        city: true,
-        state: true,
-        zip: true,
-        membershipType: true,
-        membershipStatus: true,
-        applicationDate: true,
-        approvedDate: true,
-        notes: true,
-        familyMembers: true,
-        approvedByUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
+      select: this.membershipSelectWithApprover,
     });
 
     return memberships;
@@ -352,32 +400,7 @@ export class MembershipService {
     const memberships = await prisma.membership.findMany({
       where: { paymentType },
       orderBy: { applicationDate: 'desc' },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phoneNumber: true,
-        address1: true,
-        address2: true,
-        city: true,
-        state: true,
-        zip: true,
-        membershipType: true,
-        paymentType: true,
-        membershipStatus: true,
-        applicationDate: true,
-        approvedDate: true,
-        notes: true,
-        familyMembers: true,
-        approvedByUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
+      select: this.membershipSelectWithApprover,
     });
 
     return memberships;
@@ -395,31 +418,7 @@ export class MembershipService {
         ],
       },
       orderBy: { applicationDate: 'desc' },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phoneNumber: true,
-        address1: true,
-        address2: true,
-        city: true,
-        state: true,
-        zip: true,
-        membershipType: true,
-        membershipStatus: true,
-        applicationDate: true,
-        approvedDate: true,
-        notes: true,
-        familyMembers: true,
-        approvedByUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
+      select: this.membershipSelectWithApprover,
     });
 
     return memberships;
@@ -432,32 +431,7 @@ export class MembershipService {
     const memberships = await prisma.membership.findMany({
       where: { membershipType },
       orderBy: { applicationDate: 'desc' },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phoneNumber: true,
-        address1: true,
-        address2: true,
-        city: true,
-        state: true,
-        zip: true,
-        membershipType: true,
-        paymentType: true,
-        membershipStatus: true,
-        applicationDate: true,
-        approvedDate: true,
-        notes: true,
-        familyMembers: true,
-        approvedByUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
+      select: this.membershipSelectWithApprover,
     });
 
     return memberships;
@@ -475,32 +449,7 @@ export class MembershipService {
         },
       },
       orderBy: { applicationDate: 'desc' },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phoneNumber: true,
-        address1: true,
-        address2: true,
-        city: true,
-        state: true,
-        zip: true,
-        membershipType: true,
-        paymentType: true,
-        membershipStatus: true,
-        applicationDate: true,
-        approvedDate: true,
-        notes: true,
-        familyMembers: true,
-        approvedByUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
+      select: this.membershipSelectWithApprover,
     });
 
     return memberships;
@@ -519,32 +468,7 @@ export class MembershipService {
         ],
       },
       orderBy: { applicationDate: 'desc' },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phoneNumber: true,
-        address1: true,
-        address2: true,
-        city: true,
-        state: true,
-        zip: true,
-        membershipType: true,
-        paymentType: true,
-        membershipStatus: true,
-        applicationDate: true,
-        approvedDate: true,
-        notes: true,
-        familyMembers: true,
-        approvedByUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
+      select: this.membershipSelectWithApprover,
     });
 
     return memberships;
@@ -615,6 +539,7 @@ export class MembershipService {
             paymentType: 'CASH',
             membershipStatus: 'APPROVED',
             approvedDate: now,
+            expirationDate: this.calculateExpirationDate(row.membershipType, now),
             ...(hasSpouse
               ? {
                   familyMembers: {
@@ -659,6 +584,7 @@ export class MembershipService {
         membershipStatus: true,
         applicationDate: true,
         approvedDate: true,
+        expirationDate: true,
       },
     });
 
@@ -676,6 +602,7 @@ export class MembershipService {
         membershipStatus: true,
         applicationDate: true,
         approvedDate: true,
+        expirationDate: true,
       },
     });
 

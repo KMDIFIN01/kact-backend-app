@@ -90,6 +90,7 @@ export interface Membership {
   applicationDate: Date;
   approvedDate: Date | null;
   approvedBy: string | null;
+  expirationDate: Date | null;
   notes: string | null;
   familyMembers?: FamilyMember[];
   createdAt: Date;

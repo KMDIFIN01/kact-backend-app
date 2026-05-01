@@ -70,6 +70,7 @@ async function main() {
       paymentType: 'CASH' as const,
       membershipStatus: 'APPROVED' as const,
       approvedDate: new Date(),
+      expirationDate: new Date('9999-12-31'),
     }));
 
   if (toInsert.length === 0) {
