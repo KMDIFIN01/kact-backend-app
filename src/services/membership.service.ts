@@ -593,13 +593,13 @@ export class MembershipService {
     let imported = 0;
     const now = new Date();
 
-    await prisma.$transaction(async (tx) => {
-      for (const row of validRows) {
+    for (const row of validRows) {
+      try {
         const hasSpouse =
           row.spouseFirstName && String(row.spouseFirstName).trim() &&
           row.spouseLastName && String(row.spouseLastName).trim();
 
-        await tx.membership.create({
+        await prisma.membership.create({
           data: {
             firstName: String(row.firstName).trim(),
             middleName: row.middleName ? String(row.middleName).trim() : null,
@@ -630,8 +630,10 @@ export class MembershipService {
           },
         });
         imported++;
+      } catch (err) {
+        errors.push({ row: row.rowNum, reason: `Database error: ${err instanceof Error ? err.message : 'Unknown error'}` });
       }
-    });
+    }
 
     return { imported, skipped: errors.length, errors };
   }
