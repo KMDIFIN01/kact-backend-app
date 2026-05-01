@@ -214,6 +214,33 @@ export class MembershipController {
   };
 
   /**
+   * Bulk import memberships from parsed spreadsheet data (admin only)
+   */
+  bulkImportMemberships = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { memberships: rows } = req.body;
+
+      if (!Array.isArray(rows) || rows.length === 0) {
+        throw new BadRequestError('No membership rows provided');
+      }
+
+      if (rows.length > 1000) {
+        throw new BadRequestError('Maximum 1000 rows per import');
+      }
+
+      const result = await this.membershipService.bulkImportMemberships(rows);
+
+      successResponse(
+        res,
+        result,
+        `${result.imported} membership(s) imported successfully${result.skipped > 0 ? `, ${result.skipped} row(s) skipped` : ''}`
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
    * Get current authenticated user's membership status
    */
   getMyMembershipStatus = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

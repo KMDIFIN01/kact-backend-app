@@ -82,7 +82,7 @@ export class AuthService {
     });
 
     // Send verification email
-    await this.emailService.sendVerificationEmail(email, `${firstName} ${lastName}`, verificationToken);
+    await this.emailService.sendVerificationEmail(email, middleName ? `${firstName} ${middleName} ${lastName}` : `${firstName} ${lastName}`, verificationToken);
 
     return { user };
   }
@@ -125,6 +125,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         firstName: user.firstName,
+        middleName: user.middleName,
         lastName: user.lastName,
         name: user.name,
         role: user.role,

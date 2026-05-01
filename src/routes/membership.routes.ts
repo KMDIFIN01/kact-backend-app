@@ -151,4 +151,16 @@ router.post(
   membershipController.searchUsers
 );
 
+/**
+ * @route   POST /api/v1/membership/bulk/import
+ * @desc    Bulk import memberships from parsed spreadsheet data
+ * @access  Private (Admin only)
+ */
+router.post(
+  '/bulk/import',
+  authenticate,
+  requireAdmin,
+  membershipController.bulkImportMemberships
+);
+
 export default router;

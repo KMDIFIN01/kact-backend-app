@@ -551,6 +551,92 @@ export class MembershipService {
   }
 
   /**
+   * Bulk import memberships from parsed spreadsheet rows
+   */
+  async bulkImportMemberships(rows: {
+    firstName: string;
+    middleName?: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+    address1: string;
+    address2?: string;
+    city: string;
+    state: string;
+    zip: string;
+    membershipType: string;
+    spouseFirstName?: string;
+    spouseLastName?: string;
+    spouseEmail?: string;
+  }[]): Promise<{ imported: number; skipped: number; errors: { row: number; reason: string }[] }> {
+    const VALID_MEMBERSHIP_TYPES = ['LIFETIME', 'FAMILY', 'INDIVIDUAL', 'STUDENT', 'DECADE'];
+    const REQUIRED_FIELDS = ['firstName', 'lastName', 'email', 'phoneNumber', 'address1', 'city', 'state', 'zip', 'membershipType'];
+
+    const errors: { row: number; reason: string }[] = [];
+    const validRows: (typeof rows[number] & { membershipType: string; rowNum: number })[] = [];
+
+    rows.forEach((row, index) => {
+      const rowNum = index + 2; // +2: 1-based index + header row
+      const missing = REQUIRED_FIELDS.filter(f => !row[f as keyof typeof row] || String(row[f as keyof typeof row]).trim() === '');
+      if (missing.length > 0) {
+        errors.push({ row: rowNum, reason: `Missing required fields: ${missing.join(', ')}` });
+        return;
+      }
+      const membershipType = String(row.membershipType).toUpperCase().trim();
+      if (!VALID_MEMBERSHIP_TYPES.includes(membershipType)) {
+        errors.push({ row: rowNum, reason: `Invalid membershipType "${row.membershipType}". Must be one of: ${VALID_MEMBERSHIP_TYPES.join(', ')}` });
+        return;
+      }
+      validRows.push({ ...row, membershipType, rowNum });
+    });
+
+    let imported = 0;
+    const now = new Date();
+
+    await prisma.$transaction(async (tx) => {
+      for (const row of validRows) {
+        const hasSpouse =
+          row.spouseFirstName && String(row.spouseFirstName).trim() &&
+          row.spouseLastName && String(row.spouseLastName).trim();
+
+        await tx.membership.create({
+          data: {
+            firstName: String(row.firstName).trim(),
+            middleName: row.middleName ? String(row.middleName).trim() : null,
+            lastName: String(row.lastName).trim(),
+            email: String(row.email).trim(),
+            phoneNumber: String(row.phoneNumber).trim(),
+            address1: String(row.address1).trim(),
+            address2: row.address2 ? String(row.address2).trim() : null,
+            city: String(row.city).trim(),
+            state: String(row.state).trim(),
+            zip: String(row.zip).trim(),
+            membershipType: row.membershipType as any,
+            paymentType: 'CASH',
+            membershipStatus: 'APPROVED',
+            approvedDate: now,
+            ...(hasSpouse
+              ? {
+                  familyMembers: {
+                    create: {
+                      type: 'SPOUSE' as FamilyMemberType,
+                      firstName: String(row.spouseFirstName).trim(),
+                      lastName: String(row.spouseLastName).trim(),
+                      email: row.spouseEmail ? String(row.spouseEmail).trim() : null,
+                    },
+                  },
+                }
+              : {}),
+          },
+        });
+        imported++;
+      }
+    });
+
+    return { imported, skipped: errors.length, errors };
+  }
+
+  /**
    * Get current user's membership status by email
    */
   async getCurrentUserMembershipStatus(email: string): Promise<CurrentUserMembershipStatus> {
