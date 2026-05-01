@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { emailConfig } from '@config/email';
 import { announcementEmailTemplate, announcementEmailText } from '../templates/announcementEmail';
 
-const ANNOUNCEMENT_FROM = 'KACT Announcements <announcement@kactusa.org>';
+const ANNOUNCEMENT_FROM = 'Kerala Association of Connecticut <announcement@kactusa.org>';
 const BCC_CHUNK_SIZE = 50;
 
 // TODO: Remove after testing — overrides all recipients with test addresses
