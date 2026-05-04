@@ -5,7 +5,8 @@ import cloudinary from '@config/cloudinary';
 import { announcementEmailTemplate, announcementEmailText } from '../templates/announcementEmail';
 
 const ANNOUNCEMENT_FROM = 'Kerala Association of Connecticut <announcement@kactusa.org>';
-const BATCH_SIZE = 50;
+const BATCH_SIZE = 5; // Resend rate limit: 5 requests per second
+const BATCH_DELAY_MS = 1000; // 1 second delay between batches
 const ATTACHMENT_FOLDER = 'kact/announcements';
 
 export type AnnouncementRecipients = 'users' | 'members' | 'both';
@@ -106,7 +107,11 @@ export class AnnouncementService {
     const html = announcementEmailTemplate(subject, body, inlineImages);
     const text = announcementEmailText(subject, body);
 
+    // Helper function to delay between batches
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
     // Send individual emails in parallel batches so each recipient sees only their own address in To
+    // Resend rate limit: 5 requests/second, so we send 5 emails per batch with 1 second delay
     for (let i = 0; i < allEmails.length; i += BATCH_SIZE) {
       const batch = allEmails.slice(i, i + BATCH_SIZE);
       const results = await Promise.allSettled(
@@ -138,6 +143,11 @@ export class AnnouncementService {
         }
       }
       console.log(`✉️  Announcement batch processed: ${batch.length} recipients (offset ${i})`);
+      
+      // Add delay between batches to respect Resend rate limit (except for the last batch)
+      if (i + BATCH_SIZE < allEmails.length) {
+        await delay(BATCH_DELAY_MS);
+      }
     }
 
     return { totalRecipients, sentCount, failedCount };

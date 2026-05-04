@@ -89,7 +89,8 @@ export const announcementEmailTemplate = (
       </div>
       <div class="footer">
         <p>You are receiving this email because you are a registered member or user of KACT.</p>
-        <p>&copy; ${new Date().getFullYear()} KACT – Kerala Association of Central Texas. All rights reserved.</p>
+        <p style="margin-top: 8px;">For any questions regarding these communications, please contact us at <a href="mailto:mykact@gmail.com" style="color: #1a56db;">mykact@gmail.com</a>. Kindly note that announcement@kactusa.org is a send-only address used for official updates, and replies to that email will not be monitored.</p>
+        <p>&copy; ${new Date().getFullYear()} KACT – Kerala Association of Connecticut. All rights reserved.</p>
       </div>
     </body>
     </html>
@@ -105,6 +106,9 @@ Best regards,
 The KACT Team
 
 You are receiving this email because you are a registered member or user of KACT.
-© ${new Date().getFullYear()} KACT – Kerala Association of Central Texas. All rights reserved.
+
+For any questions regarding these communications, please contact us at mykact@gmail.com. Kindly note that announcement@kactusa.org is a send-only address used for official updates, and replies to that email will not be monitored.
+
+© ${new Date().getFullYear()} KACT – Kerala Association of Connecticut. All rights reserved.
   `.trim();
 };
