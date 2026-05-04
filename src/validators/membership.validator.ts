@@ -23,8 +23,7 @@ export const createMembershipValidator = [
     .notEmpty()
     .withMessage('Email is required')
     .isEmail()
-    .withMessage('Invalid email format')
-    .normalizeEmail(),
+    .withMessage('Invalid email format'),
   body('phoneNumber')
     .trim()
     .notEmpty()
@@ -105,8 +104,7 @@ export const createMembershipValidator = [
     .optional({ checkFalsy: true })
     .trim()
     .isEmail()
-    .withMessage('Invalid family member email format')
-    .normalizeEmail(),
+    .withMessage('Invalid family member email format'),
   body('familyMembers.*.phoneNumber')
     .optional({ checkFalsy: true })
     .trim()

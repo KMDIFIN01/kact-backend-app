@@ -121,15 +121,23 @@ export class AnnouncementService {
           })
         )
       );
-      for (const result of results) {
+      for (let j = 0; j < results.length; j++) {
+        const result = results[j];
         if (result.status === 'fulfilled') {
-          sentCount++;
+          const { data, error } = result.value;
+          if (error) {
+            failedCount++;
+            console.error(`[Announcement] Resend API error for ${batch[j]}:`, error);
+          } else {
+            sentCount++;
+            console.log(`[Announcement] Sent to ${batch[j]}, id=${data?.id}`);
+          }
         } else {
           failedCount++;
-          console.error('Failed to send announcement to recipient:', result.reason);
+          console.error(`[Announcement] Failed to send to ${batch[j]}:`, result.reason);
         }
       }
-      console.log(`✉️  Announcement batch sent: ${batch.length} recipients (offset ${i})`);
+      console.log(`✉️  Announcement batch processed: ${batch.length} recipients (offset ${i})`);
     }
 
     return { totalRecipients, sentCount, failedCount };

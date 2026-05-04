@@ -2,14 +2,14 @@ import { body, param } from 'express-validator';
 
 export const registerValidator = [
   body('email')
+    .trim()
     .isEmail()
-    .normalizeEmail()
     .withMessage('Please provide a valid email address'),
   body('password')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters long')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
-    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'),
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#%^&_~`|:'.".-])[A-Za-z\d@#%^&_~`|:'.".-]+$/)
+    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@#%^&_~`|:.\'"-)'),
   body('confirmPassword')
     .custom((value, { req }) => value === req.body.password)
     .withMessage('Passwords do not match'),
@@ -63,8 +63,8 @@ export const registerValidator = [
 
 export const loginValidator = [
   body('email')
+    .trim()
     .isEmail()
-    .normalizeEmail()
     .withMessage('Please provide a valid email address'),
   body('password')
     .notEmpty()
@@ -73,8 +73,8 @@ export const loginValidator = [
 
 export const emailValidator = [
   body('email')
+    .trim()
     .isEmail()
-    .normalizeEmail()
     .withMessage('Please provide a valid email address'),
 ];
 
@@ -85,8 +85,8 @@ export const resetPasswordValidator = [
   body('password')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters long')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
-    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'),
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#%^&_~`|:'.".-])[A-Za-z\d@#%^&_~`|:'.".-]+$/)
+    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@#%^&_~`|:.\'"-)'),
   body('confirmPassword')
     .custom((value, { req }) => value === req.body.password)
     .withMessage('Passwords do not match'),
@@ -100,7 +100,7 @@ export const verifyEmailValidator = [
 
 export const resendVerificationValidator = [
   body('email')
+    .trim()
     .isEmail()
-    .normalizeEmail()
     .withMessage('Please provide a valid email address'),
 ];
