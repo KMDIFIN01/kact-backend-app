@@ -157,27 +157,25 @@ export class EmailService {
 
     const detailsHtml = isEventRelated
       ? `
-          <p><strong>Q1. Event Overall Rating:</strong> ${eventStars}</p>
-          <p><strong>Q2. Food Rating:</strong> ${foodStars}</p>
-          <p><strong>Q3. What did you enjoy most?</strong></p>
+          <p><strong>How would you rate this event overall?</strong> ${eventStars}</p>
+          <p><strong>How would you rate the food provided?</strong> ${foodStars}</p>
+          <p><strong>What did you enjoy most about the event?</strong></p>
           <p style="white-space:pre-wrap;">${enjoyedMost || 'Not provided'}</p>
-          <p><strong>Q4. What areas could be improved?</strong></p>
+          <p><strong>What areas do you feel could be improved?</strong></p>
           <p style="white-space:pre-wrap;">${improvements}</p>
-          <p><strong>Q5. Additional comments or suggestions:</strong></p>
+          <p><strong>Any additional comments or suggestions for future events?</strong></p>
           <p style="white-space:pre-wrap;">${additionalComments || 'Not provided'}</p>
         `
       : `
-          <p><strong>General Feedback:</strong></p>
+          <p><strong>Feedback</strong></p>
           <p style="white-space:pre-wrap;">${generalFeedback || 'Not provided'}</p>
-          <p><strong>What areas could be improved?</strong></p>
+          <p><strong>What areas do you feel could be improved?</strong></p>
           <p style="white-space:pre-wrap;">${improvements}</p>
-          <p><strong>Additional comments or suggestions:</strong></p>
-          <p style="white-space:pre-wrap;">${additionalComments || 'Not provided'}</p>
         `;
 
     const detailsText = isEventRelated
-      ? `Q1. Event Overall Rating: ${eventStars}\nQ2. Food Rating: ${foodStars}\nQ3. What did you enjoy most?\n${enjoyedMost || 'Not provided'}\n\nQ4. What areas could be improved?\n${improvements}\n\nQ5. Additional comments or suggestions\n${additionalComments || 'Not provided'}`
-      : `General Feedback:\n${generalFeedback || 'Not provided'}\n\nWhat areas could be improved?\n${improvements}\n\nAdditional comments or suggestions:\n${additionalComments || 'Not provided'}`;
+      ? `How would you rate this event overall? ${eventStars}\nHow would you rate the food provided? ${foodStars}\nWhat did you enjoy most about the event?\n${enjoyedMost || 'Not provided'}\n\nWhat areas do you feel could be improved?\n${improvements}\n\nAny additional comments or suggestions for future events?\n${additionalComments || 'Not provided'}`
+      : `Feedback\n${generalFeedback || 'Not provided'}\n\nWhat areas do you feel could be improved?\n${improvements}`;
 
     try {
       await this.resend.emails.send({
