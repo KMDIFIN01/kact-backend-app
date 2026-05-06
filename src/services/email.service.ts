@@ -125,31 +125,75 @@ export class EmailService {
     }
   }
 
-  async sendFeedbackEmail(
-    senderName: string,
-    senderEmail: string,
-    subject: string,
-    rating: number,
-    message: string,
-  ): Promise<void> {
-    const stars = '★'.repeat(rating) + '☆'.repeat(10 - rating);
+  async sendFeedbackEmail({
+    senderName,
+    senderEmail,
+    subject,
+    isEventRelated,
+    eventRating,
+    foodRating,
+    enjoyedMost,
+    generalFeedback,
+    improvements,
+    additionalComments,
+  }: {
+    senderName: string;
+    senderEmail: string;
+    subject: string;
+    isEventRelated: boolean;
+    eventRating?: number;
+    foodRating?: number;
+    enjoyedMost?: string;
+    generalFeedback?: string;
+    improvements: string;
+    additionalComments?: string;
+  }): Promise<void> {
+    const eventStars = eventRating
+      ? `${eventRating}/5 ${'★'.repeat(eventRating)}${'☆'.repeat(5 - eventRating)}`
+      : 'Not provided';
+    const foodStars = foodRating
+      ? `${foodRating}/5 ${'★'.repeat(foodRating)}${'☆'.repeat(5 - foodRating)}`
+      : 'Not provided';
+
+    const detailsHtml = isEventRelated
+      ? `
+          <p><strong>Q1. Event Overall Rating:</strong> ${eventStars}</p>
+          <p><strong>Q2. Food Rating:</strong> ${foodStars}</p>
+          <p><strong>Q3. What did you enjoy most?</strong></p>
+          <p style="white-space:pre-wrap;">${enjoyedMost || 'Not provided'}</p>
+          <p><strong>Q4. What areas could be improved?</strong></p>
+          <p style="white-space:pre-wrap;">${improvements}</p>
+          <p><strong>Q5. Additional comments or suggestions:</strong></p>
+          <p style="white-space:pre-wrap;">${additionalComments || 'Not provided'}</p>
+        `
+      : `
+          <p><strong>General Feedback:</strong></p>
+          <p style="white-space:pre-wrap;">${generalFeedback || 'Not provided'}</p>
+          <p><strong>What areas could be improved?</strong></p>
+          <p style="white-space:pre-wrap;">${improvements}</p>
+          <p><strong>Additional comments or suggestions:</strong></p>
+          <p style="white-space:pre-wrap;">${additionalComments || 'Not provided'}</p>
+        `;
+
+    const detailsText = isEventRelated
+      ? `Q1. Event Overall Rating: ${eventStars}\nQ2. Food Rating: ${foodStars}\nQ3. What did you enjoy most?\n${enjoyedMost || 'Not provided'}\n\nQ4. What areas could be improved?\n${improvements}\n\nQ5. Additional comments or suggestions\n${additionalComments || 'Not provided'}`
+      : `General Feedback:\n${generalFeedback || 'Not provided'}\n\nWhat areas could be improved?\n${improvements}\n\nAdditional comments or suggestions:\n${additionalComments || 'Not provided'}`;
+
     try {
       await this.resend.emails.send({
         from: `${emailConfig.fromName} <${emailConfig.fromEmail}>`,
         to: ['kmdifin01@gmail.com', 'mykact@gmail.com'],
-        replyTo: senderEmail,
+        ...(senderEmail && { replyTo: senderEmail }),
         subject: `[KACT Feedback] ${subject}`,
         html: `
           <h2 style="color:#0066B3;">KACT Community Feedback</h2>
           <p><strong>From:</strong> ${senderName}</p>
-          <p><strong>Email:</strong> ${senderEmail}</p>
+          <p><strong>Email:</strong> ${senderEmail || 'Not provided'}</p>
           <p><strong>Subject:</strong> ${subject}</p>
-          <p><strong>Satisfaction Rating:</strong> ${rating}/10 &nbsp; ${stars}</p>
           <hr/>
-          <p><strong>Feedback:</strong></p>
-          <p style="white-space:pre-wrap;">${message}</p>
+          ${detailsHtml}
         `,
-        text: `KACT Community Feedback\n\nFrom: ${senderName}\nEmail: ${senderEmail}\nSubject: ${subject}\nRating: ${rating}/10\n\n${message}`,
+        text: `KACT Community Feedback\n\nFrom: ${senderName}\nEmail: ${senderEmail || 'Not provided'}\nSubject: ${subject}\n\n${detailsText}`,
       });
       console.log(`✉️ Feedback email from ${senderEmail} sent to kmdifin01@gmail.com and mykact@gmail.com`);
     } catch (error) {
