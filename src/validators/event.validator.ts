@@ -24,8 +24,7 @@ export const createEventValidator = [
 
   body('dateTbd')
     .optional()
-    .isBoolean()
-    .withMessage('dateTbd must be a boolean'),
+    .customSanitizer((val: unknown) => val === true || val === 'true' || val === 1 || val === '1'),
 
   body('time')
     .optional({ checkFalsy: true })
@@ -70,8 +69,7 @@ export const updateEventValidator = [
 
   body('dateTbd')
     .optional()
-    .isBoolean()
-    .withMessage('dateTbd must be a boolean'),
+    .customSanitizer((val: unknown) => val === true || val === 'true' || val === 1 || val === '1'),
 
   body('time')
     .optional({ checkFalsy: true })
