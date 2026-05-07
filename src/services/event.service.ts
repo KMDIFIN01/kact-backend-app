@@ -5,6 +5,7 @@ interface CreateEventInput {
   programmeName: string;
   programmeType: string;
   date: string;
+  dateTbd?: boolean;
   time?: string;
   location?: string;
   comments?: string;
@@ -14,6 +15,7 @@ interface UpdateEventInput {
   programmeName: string;
   programmeType: string;
   date: string;
+  dateTbd?: boolean;
   time?: string;
   location?: string;
   comments?: string;
@@ -24,6 +26,7 @@ const eventSelect = {
   programmeName: true,
   programmeType: true,
   date: true,
+  dateTbd: true,
   time: true,
   location: true,
   comments: true,
@@ -45,6 +48,7 @@ export class EventService {
         programmeName: data.programmeName,
         programmeType: data.programmeType,
         date: data.date,
+        dateTbd: data.dateTbd ?? false,
         time: data.time || null,
         location: data.location || null,
         comments: data.comments || null,
@@ -63,6 +67,7 @@ export class EventService {
         programmeName: data.programmeName,
         programmeType: data.programmeType,
         date: data.date,
+        dateTbd: data.dateTbd ?? false,
         time: data.time || null,
         location: data.location || null,
         comments: data.comments || null,

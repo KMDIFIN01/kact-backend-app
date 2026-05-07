@@ -22,6 +22,11 @@ export const createEventValidator = [
     .matches(/^\d{4}-\d{2}-\d{2}$/)
     .withMessage('Date must be in YYYY-MM-DD format'),
 
+  body('dateTbd')
+    .optional()
+    .isBoolean()
+    .withMessage('dateTbd must be a boolean'),
+
   body('time')
     .optional({ checkFalsy: true })
     .trim()
@@ -62,6 +67,11 @@ export const updateEventValidator = [
     .withMessage('Date is required')
     .matches(/^\d{4}-\d{2}-\d{2}$/)
     .withMessage('Date must be in YYYY-MM-DD format'),
+
+  body('dateTbd')
+    .optional()
+    .isBoolean()
+    .withMessage('dateTbd must be a boolean'),
 
   body('time')
     .optional({ checkFalsy: true })

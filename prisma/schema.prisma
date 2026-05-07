@@ -179,6 +179,7 @@ model Event {
   programmeName String   @map("programme_name")
   programmeType String   @map("programme_type")
   date          String
+  dateTbd       Boolean  @default(false) @map("date_tbd")
   time          String?
   location      String?
   comments      String?

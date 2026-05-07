@@ -20,11 +20,12 @@ export class EventController {
 
   create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { programmeName, programmeType, date, time, location, comments } = req.body;
+      const { programmeName, programmeType, date, dateTbd, time, location, comments } = req.body;
       const event = await this.eventService.createEvent({
         programmeName,
         programmeType,
         date,
+        dateTbd: dateTbd === true || dateTbd === 'true',
         time,
         location,
         comments,
@@ -38,11 +39,12 @@ export class EventController {
   update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-      const { programmeName, programmeType, date, time, location, comments } = req.body;
+      const { programmeName, programmeType, date, dateTbd, time, location, comments } = req.body;
       const event = await this.eventService.updateEvent(id, {
         programmeName,
         programmeType,
         date,
+        dateTbd: dateTbd === true || dateTbd === 'true',
         time,
         location,
         comments,
