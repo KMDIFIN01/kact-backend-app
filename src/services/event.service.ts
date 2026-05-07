@@ -48,7 +48,8 @@ export class EventService {
         programmeName: data.programmeName,
         programmeType: data.programmeType,
         date: data.date,
-        dateTbd: data.dateTbd ?? false,
+        dateTbd: data.date === 'TBD',
+
         time: data.time || null,
         location: data.location || null,
         comments: data.comments || null,
@@ -67,7 +68,8 @@ export class EventService {
         programmeName: data.programmeName,
         programmeType: data.programmeType,
         date: data.date,
-        dateTbd: data.dateTbd ?? false,
+        dateTbd: data.date === 'TBD',
+
         time: data.time || null,
         location: data.location || null,
         comments: data.comments || null,

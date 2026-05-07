@@ -19,12 +19,8 @@ export const createEventValidator = [
     .trim()
     .notEmpty()
     .withMessage('Date is required')
-    .matches(/^\d{4}-\d{2}-\d{2}$/)
-    .withMessage('Date must be in YYYY-MM-DD format'),
-
-  body('dateTbd')
-    .optional()
-    .customSanitizer((val: unknown) => val === true || val === 'true' || val === 1 || val === '1'),
+    .custom((val: string) => val === 'TBD' || /^\d{4}-\d{2}-\d{2}$/.test(val))
+    .withMessage('Date must be in YYYY-MM-DD format or "TBD"'),
 
   body('time')
     .optional({ checkFalsy: true })
@@ -64,12 +60,8 @@ export const updateEventValidator = [
     .trim()
     .notEmpty()
     .withMessage('Date is required')
-    .matches(/^\d{4}-\d{2}-\d{2}$/)
-    .withMessage('Date must be in YYYY-MM-DD format'),
-
-  body('dateTbd')
-    .optional()
-    .customSanitizer((val: unknown) => val === true || val === 'true' || val === 1 || val === '1'),
+    .custom((val: string) => val === 'TBD' || /^\d{4}-\d{2}-\d{2}$/.test(val))
+    .withMessage('Date must be in YYYY-MM-DD format or "TBD"'),
 
   body('time')
     .optional({ checkFalsy: true })
