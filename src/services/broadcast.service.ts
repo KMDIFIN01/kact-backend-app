@@ -4,8 +4,8 @@ import { emailConfig } from '@config/email';
 import { broadcastEmailTemplate, broadcastEmailText } from '../templates/broadcastEmail';
 
 const BROADCAST_FROM = 'Kerala Association of Connecticut <announcement@kactusa.org>';
-const CONTACT_BATCH_SIZE = 10;
-const CONTACT_BATCH_DELAY_MS = 500;
+const CONTACT_BATCH_SIZE = 5;
+const CONTACT_BATCH_DELAY_MS = 1200;
 
 export interface BroadcastResult {
   broadcastId: string;
