@@ -101,9 +101,14 @@ export class AnnouncementService {
           this.resend.emails.send({
             from: ANNOUNCEMENT_FROM,
             to: email,
+            replyTo: 'mykact@gmail.com',
             subject,
             html,
             text,
+            headers: {
+              'List-Unsubscribe': '<mailto:mykact@gmail.com?subject=Unsubscribe>',
+              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+            },
             ...(resendAttachments.length > 0 && { attachments: resendAttachments }),
           })
         )

@@ -103,6 +103,7 @@ export class BroadcastService {
     const createResult = await this.resend.broadcasts.create({
       segmentId: this.segmentId,
       from: BROADCAST_FROM,
+      replyTo: 'mykact@gmail.com',
       subject,
       html,
       text,
