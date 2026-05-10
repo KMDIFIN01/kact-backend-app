@@ -1,5 +1,4 @@
 import { Resend } from 'resend';
-import { PrismaClient } from '@prisma/client';
 import { emailConfig } from '@config/email';
 import cloudinary from '@config/cloudinary';
 import { announcementEmailTemplate, announcementEmailText } from '../templates/announcementEmail';
@@ -10,6 +9,8 @@ const BATCH_DELAY_MS = 1000; // 1 second delay between batches
 const ATTACHMENT_FOLDER = 'kact/announcements';
 
 export type AnnouncementRecipients = 'users' | 'members' | 'both';
+
+const ANNOUNCEMENT_RECIPIENT = 'mykact@gmail.com';
 
 export interface AnnouncementImageAttachment {
   url: string;
@@ -24,11 +25,9 @@ export interface AnnouncementResult {
 
 export class AnnouncementService {
   private resend: Resend;
-  private prisma: PrismaClient;
 
   constructor() {
     this.resend = new Resend(emailConfig.apiKey);
-    this.prisma = new PrismaClient();
   }
 
   private uploadToCloudinary(file: Express.Multer.File): Promise<string> {
@@ -50,7 +49,6 @@ export class AnnouncementService {
   async sendAnnouncement(
     subject: string,
     body: string,
-    recipients: AnnouncementRecipients,
     files: Express.Multer.File[] = []
   ): Promise<AnnouncementResult> {
     const imageFiles = files.filter((f) => f.mimetype.startsWith('image/'));
@@ -79,23 +77,7 @@ export class AnnouncementService {
       })),
     ];
 
-    const emailSet = new Set<string>();
-
-    if (recipients === 'users' || recipients === 'both') {
-      const users = await this.prisma.user.findMany({ select: { email: true } });
-      for (const u of users) {
-        emailSet.add(u.email.toLowerCase());
-      }
-    }
-
-    if (recipients === 'members' || recipients === 'both') {
-      const memberships = await this.prisma.membership.findMany({ select: { email: true } });
-      for (const m of memberships) {
-        emailSet.add(m.email.toLowerCase());
-      }
-    }
-
-    const allEmails = Array.from(emailSet);
+    const allEmails = [ANNOUNCEMENT_RECIPIENT];
     const totalRecipients = allEmails.length;
     let sentCount = 0;
     let failedCount = 0;

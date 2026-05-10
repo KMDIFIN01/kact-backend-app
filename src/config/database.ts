@@ -2,11 +2,17 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
+// Strip sslmode from DATABASE_URL to avoid pg deprecation warning —
+// SSL is configured explicitly below via the ssl object.
+const rawDbUrl = new URL(process.env.DATABASE_URL!);
+rawDbUrl.searchParams.delete('sslmode');
+const dbConnectionString = rawDbUrl.toString();
+
 // Create PostgreSQL connection pool with explicit configuration
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: dbConnectionString,
   ssl: {
-    rejectUnauthorized: false
+    rejectUnauthorized: false,
   },
   max: 20,
   idleTimeoutMillis: 30000,

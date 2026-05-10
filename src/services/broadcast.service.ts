@@ -87,8 +87,13 @@ export class BroadcastService {
       throw new Error('No recipients found to send broadcast to');
     }
 
+    console.log(`[Broadcast] Preparing to send "${subject}" to ${totalContacts} recipients`);
+    console.log(`[Broadcast] Email list:\n${contacts.map((c) => c.email).join('\n')}`);
+
     // Sync contacts to Resend Audience
+    console.log(`[Broadcast] Syncing ${totalContacts} contacts to Resend segment...`);
     await this.syncContactsToAudience(contacts);
+    console.log(`[Broadcast] Contact sync complete`);
 
     // Build HTML and text
     const html = broadcastEmailTemplate(subject, body);
@@ -109,6 +114,7 @@ export class BroadcastService {
     }
 
     const broadcastId = createResult.data.id;
+    console.log(`[Broadcast] Broadcast created and queued, id=${broadcastId}, recipients=${totalContacts}`);
 
     return { broadcastId, totalContacts };
   }
