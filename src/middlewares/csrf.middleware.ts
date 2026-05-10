@@ -1,7 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { doubleCsrf } from 'csrf-csrf';
 
-const csrfSecret = process.env.CSRF_SECRET || 'your-csrf-secret-key-change-in-production';
+const csrfSecret = process.env.CSRF_SECRET;
+
+if (!csrfSecret) {
+  throw new Error('CSRF_SECRET environment variable must be set');
+}
 
 const csrfProtection = doubleCsrf({
   getSecret: () => csrfSecret,
