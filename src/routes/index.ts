@@ -12,6 +12,7 @@ import businessDirectoryRoutes from './businessDirectory.routes';
 import sponsorFlyerRoutes from './sponsorFlyer.routes';
 import announcementRoutes from './announcement.routes';
 import broadcastRoutes from './broadcast.routes';
+import emailInboxRoutes from './emailInbox.routes';
 import { getCsrfToken, csrfTokenHandler } from '@middlewares/csrf.middleware';
 
 const router = Router();
@@ -43,5 +44,6 @@ router.use('/contact', contactRoutes);
 router.use('/feedback', feedbackRoutes);
 router.use('/announcement', announcementRoutes);
 router.use('/broadcast', broadcastRoutes);
+router.use('/email-inbox', emailInboxRoutes);
 
 export default router;

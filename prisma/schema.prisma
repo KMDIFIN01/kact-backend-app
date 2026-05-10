@@ -295,3 +295,72 @@ model UserActivity {
   @@index([performedAt])
   @@map("user_activities")
 }
+
+// ---------------------------------------------------------------------------
+// Email inbox / inbound reply models
+// ---------------------------------------------------------------------------
+
+enum EmailDirection {
+  INBOUND
+  OUTBOUND
+}
+
+/// A conversation thread grouping related inbound and outbound messages.
+model EmailThread {
+  id           String         @id @default(cuid())
+  /// Canonical subject after stripping Re:/Fwd: prefixes
+  subject      String
+  /// Deterministic key used for thread matching: sha256(normalizedSubject:sortedParticipants)
+  threadKey    String         @unique @map("thread_key")
+  participants String[]
+  isRead       Boolean        @default(false) @map("is_read")
+  messages     EmailMessage[]
+  lastMessageAt DateTime     @default(now()) @map("last_message_at")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  @@index([threadKey])
+  @@index([lastMessageAt])
+  @@map("email_threads")
+}
+
+/// A single email message (either inbound from Resend webhook or outbound reply).
+model EmailMessage {
+  id              String          @id @default(cuid())
+  threadId        String          @map("thread_id")
+  thread          EmailThread     @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  direction       EmailDirection
+  /// Resend email id or webhook event id — used for idempotency
+  providerMessageId String?       @unique @map("provider_message_id")
+  fromAddress     String          @map("from_address")
+  toAddresses     String[]        @map("to_addresses")
+  ccAddresses     String[]        @map("cc_addresses")
+  subject         String
+  textBody        String?         @map("text_body")
+  htmlBody        String?         @map("html_body")
+  attachments     EmailAttachment[]
+  receivedAt      DateTime        @default(now()) @map("received_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  @@index([threadId])
+  @@index([providerMessageId])
+  @@index([fromAddress])
+  @@index([receivedAt])
+  @@map("email_messages")
+}
+
+/// Attachment metadata for an email message (content stored in Cloudinary or as raw data URL).
+model EmailAttachment {
+  id          String       @id @default(cuid())
+  messageId   String       @map("message_id")
+  message     EmailMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  filename    String
+  contentType String       @map("content_type")
+  /// Size in bytes
+  size        Int
+  /// Storage URL if uploaded; null if not yet stored
+  url         String?
+
+  @@index([messageId])
+  @@map("email_attachments")
+}
