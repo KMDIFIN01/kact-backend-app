@@ -25,7 +25,7 @@ export interface User {
   id: string;
   email: string;
   name: string | null;
-  role: 'USER' | 'ADMIN' | 'SUPER';
+  role: 'USER' | 'ADMIN' | 'ADMIN_USER' | 'SUPER' | 'SUPER_ADMIN';
   emailVerified: boolean;
   createdAt: Date;
 }

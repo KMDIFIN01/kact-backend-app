@@ -11,7 +11,7 @@ export const requireSuper = (
       throw new ForbiddenError('Authentication required');
     }
 
-    if (req.user.role !== 'SUPER') {
+    if (req.user.role !== 'SUPER' && req.user.role !== 'SUPER_ADMIN') {
       throw new ForbiddenError('Super admin access required');
     }
 

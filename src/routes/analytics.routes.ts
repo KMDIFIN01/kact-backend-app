@@ -27,7 +27,7 @@ const trackingLimiter = rateLimit({
 router.post('/track/visit', trackingLimiter, optionalAuth, validate(trackPageVisitValidator), analyticsController.trackVisit);
 router.post('/track/activity', trackingLimiter, optionalAuth, validate(trackActivityValidator), analyticsController.trackActivity);
 
-// SUPER user only — report endpoints
+// SUPER / SUPER_ADMIN only — report endpoints
 router.get('/summary', authenticate, requireSuper, validate(analyticsSummaryValidator), analyticsController.getSummary);
 router.get('/users', authenticate, requireSuper, validate(analyticsSummaryValidator), analyticsController.getUserReport);
 router.get('/visitors', authenticate, requireSuper, validate(analyticsSummaryValidator), analyticsController.getVisitorReport);

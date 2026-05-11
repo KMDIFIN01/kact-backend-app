@@ -102,9 +102,10 @@ export class UserController {
         throw new NotFoundError('User not found');
       }
 
-      // Prevent modifying another SUPER user's role
-      if (targetUser.role === 'SUPER') {
-        throw new ForbiddenError('Cannot modify a SUPER user\'s role');
+      // Prevent modifying another super user's role
+      const targetRole = String(targetUser.role).toUpperCase();
+      if (targetRole === 'SUPER' || targetRole === 'SUPER_ADMIN') {
+        throw new ForbiddenError('Cannot modify a super user\'s role');
       }
 
       // Update the user's role

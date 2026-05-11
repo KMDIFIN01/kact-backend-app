@@ -3,7 +3,7 @@ import { emailConfig } from '@config/email';
 import cloudinary from '@config/cloudinary';
 import { announcementEmailTemplate, announcementEmailText } from '../templates/announcementEmail';
 
-const ANNOUNCEMENT_FROM = 'Kerala Association of Connecticut <announcement@kactusa.org>';
+const ANNOUNCEMENT_FROM = 'Kerala Association of Connecticut <contact@kactusa.org>';
 const BATCH_SIZE = 5; // Resend rate limit: 5 requests per second
 const BATCH_DELAY_MS = 1000; // 1 second delay between batches
 const ATTACHMENT_FOLDER = 'kact/announcements';

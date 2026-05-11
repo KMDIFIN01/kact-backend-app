@@ -17,8 +17,8 @@ router.get('/registered', authenticate, userController.getRegisteredUsers);
 
 /**
  * @route   PATCH /api/v1/users/:id/role
- * @desc    Assign a role (USER or ADMIN) to a user
- * @access  Private - SUPER only
+ * @desc    Assign a role (USER, ADMIN, ADMIN_USER, SUPER_ADMIN) to a user
+ * @access  Private - SUPER / SUPER_ADMIN
  */
 router.patch('/:id/role', authenticate, requireSuper, validate(assignRoleValidator), userController.assignRole);
 
