@@ -18,6 +18,6 @@ export const assignRoleValidator = [
     .trim()
     .notEmpty()
     .withMessage('Role is required')
-    .isIn(['USER', 'ADMIN', 'ADMIN_USER', 'SUPER_ADMIN'])
-    .withMessage('Role must be one of USER, ADMIN, ADMIN_USER, or SUPER_ADMIN'),
+    .isIn(['USER', 'ADMIN', 'ADMIN_USER', 'SUPER', 'SUPER_ADMIN'])
+    .withMessage('Role must be one of USER, ADMIN, ADMIN_USER, SUPER, or SUPER_ADMIN'),
 ];
