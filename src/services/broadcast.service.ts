@@ -72,7 +72,7 @@ export class BroadcastService {
           this.resend.emails.send({
             from: BROADCAST_FROM,
             to: email,
-            replyTo: 'mykact@gmail.com',
+            replyTo: 'contact@kactusa.org',
             subject,
             html,
             text,
@@ -144,7 +144,7 @@ export class BroadcastService {
     const createResult = await this.resend.broadcasts.create({
       segmentId: this.segmentId,
       from: BROADCAST_FROM,
-      replyTo: 'mykact@gmail.com',
+      replyTo: 'contact@kactusa.org',
       subject,
       html,
       text,
