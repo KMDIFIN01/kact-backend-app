@@ -6,8 +6,6 @@ import { broadcastEmailTemplate, broadcastEmailText } from '../templates/broadca
 const BROADCAST_FROM = 'Kerala Association of Connecticut <contact@kactusa.org>';
 const CONTACT_BATCH_SIZE = 5;
 const CONTACT_BATCH_DELAY_MS = 1200;
-const TEST_BROADCAST_RECIPIENTS = ['kmdifin01@gmail.com'] as const;
-const BROADCAST_TEST_MODE = true;
 
 export interface BroadcastResult {
   broadcastId: string;
@@ -29,7 +27,7 @@ export class BroadcastService {
     this.resend = new Resend(emailConfig.apiKey);
     this.prisma = new PrismaClient();
     this.segmentId = process.env.RESEND_SEGMENT_ID ?? '';
-    if (!BROADCAST_TEST_MODE && !this.segmentId) {
+    if (!this.segmentId) {
       throw new Error('RESEND_SEGMENT_ID environment variable is not set');
     }
   }
@@ -59,45 +57,6 @@ export class BroadcastService {
   }
 
   async sendBroadcast(subject: string, body: string): Promise<BroadcastResult> {
-    if (BROADCAST_TEST_MODE) {
-      const html = broadcastEmailTemplate(subject, body);
-      const text = broadcastEmailText(body);
-
-      console.log(
-        `[Broadcast][Test Mode] Sending "${subject}" only to: ${TEST_BROADCAST_RECIPIENTS.join(', ')}`
-      );
-
-      const sendResults = await Promise.allSettled(
-        TEST_BROADCAST_RECIPIENTS.map((email) =>
-          this.resend.emails.send({
-            from: BROADCAST_FROM,
-            to: email,
-            replyTo: 'contact@kactusa.org',
-            subject,
-            html,
-            text,
-          })
-        )
-      );
-
-      const failed = sendResults.filter((result) => {
-        if (result.status === 'rejected') {
-          return true;
-        }
-
-        return !!result.value.error;
-      }).length;
-
-      if (failed === TEST_BROADCAST_RECIPIENTS.length) {
-        throw new Error('Failed to send test broadcast emails');
-      }
-
-      return {
-        broadcastId: `test-broadcast-${Date.now()}`,
-        totalContacts: TEST_BROADCAST_RECIPIENTS.length,
-      };
-    }
-
     // Collect all users and members from DB
     const [users, members] = await Promise.all([
       this.prisma.user.findMany({ select: { email: true, firstName: true, lastName: true } }),
@@ -144,7 +103,7 @@ export class BroadcastService {
     const createResult = await this.resend.broadcasts.create({
       segmentId: this.segmentId,
       from: BROADCAST_FROM,
-      replyTo: 'contact@kactusa.org',
+      replyTo: 'mykact@gmail.com',
       subject,
       html,
       text,
