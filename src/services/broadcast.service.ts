@@ -5,7 +5,10 @@ import { broadcastEmailTemplate, broadcastEmailText } from '../templates/broadca
 
 const BROADCAST_FROM = 'Kerala Association of Connecticut <contact@kactusa.org>';
 const CONTACT_BATCH_SIZE = 5;
-const CONTACT_BATCH_DELAY_MS = 1200;
+const CONTACT_BATCH_DELAY_MS = 1500; // Increased from 1200ms to respect rate limit
+const POST_SYNC_DELAY_MS = 1500; // Delay after contact sync before broadcast creation
+const MAX_RETRY_ATTEMPTS = 3;
+const RETRY_BASE_DELAY_MS = 2000;
 
 export interface BroadcastResult {
   broadcastId: string;
@@ -95,23 +98,58 @@ export class BroadcastService {
     await this.syncContactsToAudience(contacts);
     console.log(`[Broadcast] Contact sync complete`);
 
+    // Add delay after sync to avoid rate limit on broadcast creation
+    console.log(`[Broadcast] Waiting ${POST_SYNC_DELAY_MS}ms before creating broadcast to respect rate limits...`);
+    await this.delay(POST_SYNC_DELAY_MS);
+    console.log(`[Broadcast] Proceeding with broadcast creation`);
+
     // Build HTML and text
     const html = broadcastEmailTemplate(subject, body);
     const text = broadcastEmailText(body);
 
-    // Create and send the broadcast in one step
-    const createResult = await this.resend.broadcasts.create({
-      segmentId: this.segmentId,
-      from: BROADCAST_FROM,
-      replyTo: 'contact@kactusa.org',
-      subject,
-      html,
-      text,
-      send: true,
-    } as Parameters<typeof this.resend.broadcasts.create>[0]);
+    // Create and send the broadcast with retry logic for rate limit resilience
+    let createResult: Awaited<ReturnType<typeof this.resend.broadcasts.create>> | null = null;
+    let lastError: Error | null = null;
 
-    if (createResult.error || !createResult.data?.id) {
-      throw new Error(createResult.error?.message ?? 'Failed to create broadcast');
+    for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
+      try {
+        console.log(`[Broadcast] Creating broadcast (attempt ${attempt}/${MAX_RETRY_ATTEMPTS})...`);
+        createResult = await this.resend.broadcasts.create({
+          segmentId: this.segmentId,
+          from: BROADCAST_FROM,
+          replyTo: 'contact@kactusa.org',
+          subject,
+          html,
+          text,
+          send: true,
+        } as Parameters<typeof this.resend.broadcasts.create>[0]);
+
+        if (createResult.error) {
+          throw new Error(createResult.error.message ?? 'Failed to create broadcast');
+        }
+
+        // Success - break out of retry loop
+        break;
+      } catch (error) {
+        lastError = error as Error;
+        const isRateLimitError = lastError.message.toLowerCase().includes('rate limit') ||
+                                 lastError.message.toLowerCase().includes('too many requests');
+
+        console.error(`[Broadcast] Attempt ${attempt}/${MAX_RETRY_ATTEMPTS} failed: ${lastError.message}`);
+
+        if (attempt < MAX_RETRY_ATTEMPTS && isRateLimitError) {
+          const retryDelay = RETRY_BASE_DELAY_MS * Math.pow(2, attempt - 1); // Exponential backoff
+          console.log(`[Broadcast] Rate limit detected. Retrying in ${retryDelay}ms...`);
+          await this.delay(retryDelay);
+        } else {
+          // Last attempt or non-rate-limit error - throw
+          break;
+        }
+      }
+    }
+
+    if (!createResult || createResult.error || !createResult.data?.id) {
+      throw new Error(lastError?.message ?? createResult?.error?.message ?? 'Failed to create broadcast');
     }
 
     const broadcastId = createResult.data.id;
