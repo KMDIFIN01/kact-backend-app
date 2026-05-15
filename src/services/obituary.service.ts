@@ -10,6 +10,12 @@ interface CreateObituaryInput {
   birthDate: Date;
   deathDate: Date;
   age?: number;
+  funeralDate?: Date;
+  funeralTime?: string;
+  funeralServiceLocation?: string;
+  funeralServiceAddress?: string;
+  burialServiceLocation?: string;
+  burialServiceAddress?: string;
 }
 
 interface UpdateObituaryInput {
@@ -20,6 +26,12 @@ interface UpdateObituaryInput {
   birthDate?: Date;
   deathDate?: Date;
   age?: number;
+  funeralDate?: Date;
+  funeralTime?: string;
+  funeralServiceLocation?: string;
+  funeralServiceAddress?: string;
+  burialServiceLocation?: string;
+  burialServiceAddress?: string;
 }
 
 const selectFields = {
@@ -31,6 +43,12 @@ const selectFields = {
   birthDate: true,
   deathDate: true,
   age: true,
+  funeralDate: true,
+  funeralTime: true,
+  funeralServiceLocation: true,
+  funeralServiceAddress: true,
+  burialServiceLocation: true,
+  burialServiceAddress: true,
   createdAt: true,
   updatedAt: true,
 };
@@ -48,6 +66,12 @@ export class ObituaryService {
         birthDate: data.birthDate,
         deathDate: data.deathDate,
         age: data.age || null,
+        funeralDate: data.funeralDate || null,
+        funeralTime: data.funeralTime || null,
+        funeralServiceLocation: data.funeralServiceLocation || null,
+        funeralServiceAddress: data.funeralServiceAddress || null,
+        burialServiceLocation: data.burialServiceLocation || null,
+        burialServiceAddress: data.burialServiceAddress || null,
       },
       select: selectFields,
     });
@@ -89,6 +113,12 @@ export class ObituaryService {
         ...(data.birthDate !== undefined && { birthDate: data.birthDate }),
         ...(data.deathDate !== undefined && { deathDate: data.deathDate }),
         ...(data.age !== undefined && { age: data.age }),
+        ...(data.funeralDate !== undefined && { funeralDate: data.funeralDate }),
+        ...(data.funeralTime !== undefined && { funeralTime: data.funeralTime }),
+        ...(data.funeralServiceLocation !== undefined && { funeralServiceLocation: data.funeralServiceLocation }),
+        ...(data.funeralServiceAddress !== undefined && { funeralServiceAddress: data.funeralServiceAddress }),
+        ...(data.burialServiceLocation !== undefined && { burialServiceLocation: data.burialServiceLocation }),
+        ...(data.burialServiceAddress !== undefined && { burialServiceAddress: data.burialServiceAddress }),
       },
       select: selectFields,
     });
