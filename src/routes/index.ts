@@ -13,6 +13,7 @@ import sponsorFlyerRoutes from './sponsorFlyer.routes';
 import announcementRoutes from './announcement.routes';
 import broadcastRoutes from './broadcast.routes';
 import emailInboxRoutes from './emailInbox.routes';
+import obituaryRoutes from './obituary.routes';
 import { getCsrfToken, csrfTokenHandler } from '@middlewares/csrf.middleware';
 
 const router = Router();
@@ -45,5 +46,6 @@ router.use('/feedback', feedbackRoutes);
 router.use('/announcement', announcementRoutes);
 router.use('/broadcast', broadcastRoutes);
 router.use('/email-inbox', emailInboxRoutes);
+router.use('/obituaries', obituaryRoutes);
 
 export default router;

@@ -50,6 +50,7 @@
     "multer": "^2.0.2",
     "pg": "^8.18.0",
     "prisma": "^6.19.2",
+    "react-helmet-async": "^3.0.0",
     "resend": "^6.9.1",
     "rimraf": "^6.1.2",
     "speckit": "^0.1.0",

@@ -366,3 +366,19 @@ model EmailAttachment {
   @@index([messageId])
   @@map("email_attachments")
 }
+
+model Obituary {
+  id         String    @id @default(cuid())
+  firstName  String    @map("first_name")
+  middleName String?   @map("middle_name")
+  lastName   String    @map("last_name")
+  photoUrl   String?   @map("photo_url")
+  birthDate  DateTime  @map("birth_date")
+  deathDate  DateTime  @map("death_date")
+  age        Int?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  @@index([deathDate])
+  @@map("obituaries")
+}
