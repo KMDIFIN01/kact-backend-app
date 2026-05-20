@@ -10,6 +10,8 @@ const POST_SYNC_DELAY_MS = 1500; // Delay after contact sync before broadcast cr
 const MAX_RETRY_ATTEMPTS = 3;
 const RETRY_BASE_DELAY_MS = 2000;
 
+export type BroadcastRecipients = 'users' | 'members' | 'both';
+
 export interface BroadcastResult {
   broadcastId: string;
   totalContacts: number;
@@ -59,12 +61,17 @@ export class BroadcastService {
     }
   }
 
-  async sendBroadcast(subject: string, body: string): Promise<BroadcastResult> {
-    // Collect all users and members from DB
-    const [users, members] = await Promise.all([
-      this.prisma.user.findMany({ select: { email: true, firstName: true, lastName: true } }),
-      this.prisma.membership.findMany({ select: { email: true, firstName: true, lastName: true } }),
-    ]);
+  async sendBroadcast(subject: string, body: string, recipients: BroadcastRecipients = 'both'): Promise<BroadcastResult> {
+    // Collect users and/or members from DB based on recipient selection
+    let users: { email: string; firstName: string | null; lastName: string | null }[] = [];
+    let members: { email: string; firstName: string; lastName: string }[] = [];
+
+    if (recipients === 'users' || recipients === 'both') {
+      users = await this.prisma.user.findMany({ select: { email: true, firstName: true, lastName: true } });
+    }
+    if (recipients === 'members' || recipients === 'both') {
+      members = await this.prisma.membership.findMany({ select: { email: true, firstName: true, lastName: true } });
+    }
 
     // Deduplicate by email (case-insensitive), users take precedence for name data
     const contactMap = new Map<string, ContactEntry>();
@@ -90,7 +97,7 @@ export class BroadcastService {
       throw new Error('No recipients found to send broadcast to');
     }
 
-    console.log(`[Broadcast] Preparing to send "${subject}" to ${totalContacts} recipients`);
+    console.log(`[Broadcast] Preparing to send "${subject}" to ${totalContacts} recipients (audience: ${recipients})`);
     console.log(`[Broadcast] Email list:\n${contacts.map((c) => c.email).join('\n')}`);
 
     // Sync contacts to Resend Audience

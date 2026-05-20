@@ -12,7 +12,7 @@ export class BroadcastController {
 
   send = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { subject, body } = req.body as { subject?: unknown; body?: unknown };
+      const { subject, body, recipients } = req.body as { subject?: unknown; body?: unknown; recipients?: unknown };
 
       if (typeof subject !== 'string' || subject.trim().length === 0) {
         throw new BadRequestError('subject is required');
@@ -27,7 +27,15 @@ export class BroadcastController {
         throw new BadRequestError('body must be 50,000 characters or fewer');
       }
 
-      const result = await this.broadcastService.sendBroadcast(subject.trim(), body.trim());
+      // Validate recipients parameter
+      const validRecipients = ['users', 'members', 'both'];
+      const recipientsValue = typeof recipients === 'string' && validRecipients.includes(recipients) ? recipients : 'both';
+
+      const result = await this.broadcastService.sendBroadcast(
+        subject.trim(),
+        body.trim(),
+        recipientsValue as 'users' | 'members' | 'both'
+      );
 
       successResponse(res, result, 'Broadcast sent successfully');
     } catch (error) {
