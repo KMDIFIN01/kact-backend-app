@@ -71,7 +71,7 @@ export const broadcastEmailTemplate = (subject: string, body: string): string =>
         <div class="header">
           <p>An announcement from KACT (Kerala Association of Connecticut)</p>
         </div>
-        <p class="greeting">Dear {{{FIRST_NAME|Community Member}}},</p>
+        <p class="greeting">Dear KACT Community Member,</p>
         <div class="body-content">
           ${bodyHtml}
         </div>
@@ -89,4 +89,4 @@ export const broadcastEmailTemplate = (subject: string, body: string): string =>
 };
 
 export const broadcastEmailText = (body: string): string =>
-  `Dear Community Member,\n\n${body}\n\n---\nKerala Association of Connecticut (KACT)\nhttps://kactusa.org\n\nTo unsubscribe: {{{RESEND_UNSUBSCRIBE_URL}}}`;
+  `Dear KACT Community Member,\n\n${body}\n\n---\nKerala Association of Connecticut (KACT)\nhttps://kactusa.org\n\nTo unsubscribe: {{{RESEND_UNSUBSCRIBE_URL}}}`;
