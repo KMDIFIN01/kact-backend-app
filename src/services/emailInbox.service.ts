@@ -141,7 +141,9 @@ export class EmailInboxService {
       throw new Error(`Thread ${input.threadId} not found`);
     }
 
-    const fromField = `${emailConfig.fromName} <${emailConfig.fromEmail}>`;
+    // Use configured reply email (e.g., contact@kactusa.org) for inbox replies
+    const replyFromEmail = emailConfig.replyEmail;
+    const fromField = `${emailConfig.fromName} <${replyFromEmail}>`;
 
     const sendResult = await this.resend.emails.send({
       from: fromField,
@@ -161,7 +163,7 @@ export class EmailInboxService {
         threadId: thread.id,
         direction: EmailDirection.OUTBOUND,
         providerMessageId: sendResult.data?.id ?? null,
-        fromAddress: emailConfig.fromEmail,
+        fromAddress: replyFromEmail,
         toAddresses: input.toAddresses,
         ccAddresses: input.ccAddresses ?? [],
         subject: input.subject,
