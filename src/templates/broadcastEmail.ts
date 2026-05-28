@@ -1,9 +1,23 @@
-export const broadcastEmailTemplate = (subject: string, body: string): string => {
+interface ImageAttachment {
+  url: string;
+  filename: string;
+}
+
+export const broadcastEmailTemplate = (subject: string, body: string, images: ImageAttachment[] = []): string => {
   const bodyHtml = body
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/\n/g, '<br/>');
+
+  const imagesHtml = images.length > 0
+    ? `<div style="margin-top: 28px; border-top: 1px solid #E5E7EB; padding-top: 20px;">
+        ${images.map((img) => `
+        <div style="margin-bottom: 20px;">
+          <img src="${img.url}" alt="${img.filename}" style="max-width: 100%; border-radius: 8px; display: block; border: 1px solid #E5E7EB;" />
+        </div>`).join('')}
+      </div>`
+    : '';
 
   return `
     <!DOCTYPE html>
@@ -38,11 +52,6 @@ export const broadcastEmailTemplate = (subject: string, body: string): string =>
           font-size: 13px;
           color: #6b7280;
         }
-        .greeting {
-          font-size: 15px;
-          color: #374151;
-          margin-bottom: 16px;
-        }
         .body-content {
           font-size: 15px;
           color: #374151;
@@ -71,10 +80,10 @@ export const broadcastEmailTemplate = (subject: string, body: string): string =>
         <div class="header">
           <p>An announcement from KACT (Kerala Association of Connecticut)</p>
         </div>
-        <p class="greeting">Dear KACT Community Member,</p>
         <div class="body-content">
           ${bodyHtml}
         </div>
+        ${imagesHtml}
         <div class="footer">
           <p>Kerala Association of Connecticut (KACT) &mdash; <a href="https://kactusa.org">kactusa.org</a></p>
           <p class="unsubscribe">
@@ -89,4 +98,4 @@ export const broadcastEmailTemplate = (subject: string, body: string): string =>
 };
 
 export const broadcastEmailText = (body: string): string =>
-  `Dear KACT Community Member,\n\n${body}\n\n---\nKerala Association of Connecticut (KACT)\nhttps://kactusa.org\n\nTo unsubscribe: {{{RESEND_UNSUBSCRIBE_URL}}}`;
+  `${body}\n\n---\nKerala Association of Connecticut (KACT)\nhttps://kactusa.org\n\nTo unsubscribe: {{{RESEND_UNSUBSCRIBE_URL}}}`;

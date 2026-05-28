@@ -1,6 +1,7 @@
 import { Resend } from 'resend';
 import { PrismaClient } from '@prisma/client';
 import { emailConfig } from '@config/email';
+import cloudinary from '@config/cloudinary';
 import { broadcastEmailTemplate, broadcastEmailText } from '../templates/broadcastEmail';
 
 const BROADCAST_FROM = 'Kerala Association of Connecticut <contact@kactusa.org>';
@@ -9,6 +10,7 @@ const CONTACT_BATCH_DELAY_MS = 1500; // Increased from 1200ms to respect rate li
 const POST_SYNC_DELAY_MS = 1500; // Delay after contact sync before broadcast creation
 const MAX_RETRY_ATTEMPTS = 3;
 const RETRY_BASE_DELAY_MS = 2000;
+const IMAGE_FOLDER = 'kact/broadcasts';
 
 export type BroadcastRecipients = 'users' | 'members' | 'both';
 
@@ -21,6 +23,11 @@ interface ContactEntry {
   email: string;
   firstName: string;
   lastName: string;
+}
+
+export interface BroadcastImageAttachment {
+  url: string;
+  filename: string;
 }
 
 export class BroadcastService {
@@ -39,6 +46,22 @@ export class BroadcastService {
 
   private delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private uploadToCloudinary(file: Express.Multer.File): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: IMAGE_FOLDER, resource_type: 'image', use_filename: true, unique_filename: true },
+        (error: unknown, result: { secure_url?: string } | undefined) => {
+          if (error || !result?.secure_url) {
+            reject(error || new Error('Cloudinary upload failed'));
+            return;
+          }
+          resolve(result.secure_url);
+        }
+      );
+      stream.end(file.buffer);
+    });
   }
 
   private async syncContactsToAudience(contacts: ContactEntry[]): Promise<void> {
@@ -61,7 +84,20 @@ export class BroadcastService {
     }
   }
 
-  async sendBroadcast(subject: string, body: string, recipients: BroadcastRecipients = 'both'): Promise<BroadcastResult> {
+  async sendBroadcast(
+    subject: string,
+    body: string,
+    recipients: BroadcastRecipients = 'both',
+    files: Express.Multer.File[] = []
+  ): Promise<BroadcastResult> {
+    // Upload images to Cloudinary for inline embedding
+    const inlineImages: BroadcastImageAttachment[] = await Promise.all(
+      files.map(async (file) => ({
+        url: await this.uploadToCloudinary(file),
+        filename: file.originalname,
+      }))
+    );
+
     // Collect users and/or members from DB based on recipient selection
     let users: { email: string; firstName: string | null; lastName: string | null }[] = [];
     let members: { email: string; firstName: string; lastName: string }[] = [];
@@ -111,7 +147,7 @@ export class BroadcastService {
     console.log(`[Broadcast] Proceeding with broadcast creation`);
 
     // Build HTML and text
-    const html = broadcastEmailTemplate(subject, body);
+    const html = broadcastEmailTemplate(subject, body, inlineImages);
     const text = broadcastEmailText(body);
 
     // Create and send the broadcast with retry logic for rate limit resilience

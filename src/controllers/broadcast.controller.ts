@@ -13,6 +13,7 @@ export class BroadcastController {
   send = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { subject, body, recipients } = req.body as { subject?: unknown; body?: unknown; recipients?: unknown };
+      const files = (req.files as Express.Multer.File[]) || [];
 
       if (typeof subject !== 'string' || subject.trim().length === 0) {
         throw new BadRequestError('subject is required');
@@ -34,7 +35,8 @@ export class BroadcastController {
       const result = await this.broadcastService.sendBroadcast(
         subject.trim(),
         body.trim(),
-        recipientsValue as 'users' | 'members' | 'both'
+        recipientsValue as 'users' | 'members' | 'both',
+        files
       );
 
       successResponse(res, result, 'Broadcast sent successfully');

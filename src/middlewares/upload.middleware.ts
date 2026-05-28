@@ -82,3 +82,34 @@ export const announcementUpload = (req: Request, res: Response, next: NextFuncti
     next();
   });
 };
+
+// ── Broadcast images (images only, max 5 files, 10 MB each) ──
+
+const BROADCAST_ALLOWED_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+];
+
+const broadcastImageUploader = multer({
+  storage,
+  fileFilter: (_req: Request, file: MulterFile, cb: FileFilterCallback) => {
+    if (!BROADCAST_ALLOWED_TYPES.includes(file.mimetype)) {
+      cb(new BadRequestError('Only images (JPEG, PNG, GIF, WebP) are allowed'));
+      return;
+    }
+    cb(null, true);
+  },
+  limits: { fileSize: 10 * 1024 * 1024, files: 5 },
+});
+
+export const broadcastImageUpload = (req: Request, res: Response, next: NextFunction): void => {
+  broadcastImageUploader.array('images', 5)(req, res, (err: unknown) => {
+    if (err instanceof Error) {
+      next(new BadRequestError(err.message));
+      return;
+    }
+    next();
+  });
+};
