@@ -15,8 +15,8 @@ export const registerValidator = [
     .withMessage('Passwords do not match'),
   body('firstName')
     .trim()
-    .isLength({ min: 2, max: 50 })
-    .withMessage('First name must be between 2 and 50 characters'),
+    .isLength({ min: 1, max: 50 })
+    .withMessage('First name must be between 1 and 50 characters'),
   body('middleName')
     .optional({ checkFalsy: true })
     .trim()
@@ -24,8 +24,8 @@ export const registerValidator = [
     .withMessage('Middle name must be 50 characters or less'),
   body('lastName')
     .trim()
-    .isLength({ min: 2, max: 50 })
-    .withMessage('Last name must be between 2 and 50 characters'),
+    .isLength({ min: 1, max: 50 })
+    .withMessage('Last name must be between 1 and 50 characters'),
   body('phone')
     .optional({ checkFalsy: true })
     .matches(/^[+]?([0-9\s().-]){7,20}$/)
@@ -34,8 +34,8 @@ export const registerValidator = [
     .trim()
     .notEmpty()
     .withMessage('Address line 1 is required')
-    .isLength({ min: 2, max: 200 })
-    .withMessage('Address line 1 must be between 2 and 200 characters'),
+    .isLength({ min: 1, max: 200 })
+    .withMessage('Address line 1 must be between 1 and 200 characters'),
   body('address2')
     .optional()
     .trim()
@@ -45,8 +45,8 @@ export const registerValidator = [
     .trim()
     .notEmpty()
     .withMessage('City is required')
-    .isLength({ min: 2, max: 100 })
-    .withMessage('City must be between 2 and 100 characters'),
+    .isLength({ min: 1, max: 100 })
+    .withMessage('City must be between 1 and 100 characters'),
   body('state')
     .trim()
     .notEmpty()
