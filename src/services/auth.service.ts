@@ -68,6 +68,7 @@ export class AuthService {
         zip,
         emailVerificationToken: hashedVerificationToken,
         emailVerificationExpiry: verificationExpiry,
+        termsAcceptedAt: new Date(),
       },
       select: {
         id: true,

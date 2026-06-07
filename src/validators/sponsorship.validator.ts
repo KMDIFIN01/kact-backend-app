@@ -87,6 +87,11 @@ export const createSponsorshipValidator = [
     .trim()
     .isLength({ max: 1000 })
     .withMessage('Notes must be 1000 characters or less'),
+  body('termsAccepted')
+    .notEmpty()
+    .withMessage('You must accept the terms and conditions')
+    .equals('true')
+    .withMessage('You must accept the terms and conditions'),
 ];
 
 export const updateSponsorshipStatusValidator = [

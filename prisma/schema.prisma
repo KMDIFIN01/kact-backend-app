@@ -81,6 +81,7 @@ model User {
   emailVerificationExpiry DateTime?      @map("email_verification_expiry")
   passwordResetToken      String?        @unique @map("password_reset_token")
   passwordResetExpiry     DateTime?      @map("password_reset_expiry")
+  termsAcceptedAt         DateTime?      @map("terms_accepted_at")
   createdAt               DateTime       @default(now()) @map("created_at")
   updatedAt               DateTime       @updatedAt @map("updated_at")
   refreshTokens           RefreshToken[]
@@ -149,6 +150,7 @@ model Membership {
   expirationDate   DateTime?        @map("expiration_date")
   notes            String?
   familyMembers    FamilyMember[]
+  termsAcceptedAt  DateTime?        @map("terms_accepted_at")
   createdAt        DateTime         @default(now()) @map("created_at")
   updatedAt        DateTime         @updatedAt @map("updated_at")
 
@@ -215,6 +217,7 @@ model Sponsorship {
   approvedBy        String?           @map("approved_by")
   approvedByUser    User?             @relation(fields: [approvedBy], references: [id], onDelete: SetNull)
   notes             String?
+  termsAcceptedAt   DateTime?         @map("terms_accepted_at")
   createdAt         DateTime          @default(now()) @map("created_at")
   updatedAt         DateTime          @updatedAt @map("updated_at")
 

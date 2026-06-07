@@ -86,6 +86,7 @@ export class SponsorshipService {
         sponsorshipType: data.sponsorshipType,
         paymentType: data.paymentType,
         notes: data.notes || null,
+        termsAcceptedAt: new Date(),
       },
       select: selectFields,
     });

@@ -114,6 +114,11 @@ export const createMembershipValidator = [
     .optional({ nullable: true })
     .isInt({ min: 0, max: 17 })
     .withMessage('Child age must be between 0 and 17'),
+  body('termsAccepted')
+    .notEmpty()
+    .withMessage('You must accept the terms and conditions')
+    .equals('true')
+    .withMessage('You must accept the terms and conditions'),
 ];
 
 export const updateMembershipStatusValidator = [

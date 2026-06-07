@@ -219,6 +219,7 @@ export class MembershipService {
           approvedDate: null,
           approvedBy: null,
           expirationDate,
+          termsAcceptedAt: new Date(),
           ...(acceptsFamilyMembers && data.familyMembers && data.familyMembers.length > 0
             ? { familyMembers: { create: buildFamilyCreate(data.familyMembers) } }
             : {}),
@@ -252,6 +253,7 @@ export class MembershipService {
         paymentType: data.paymentType,
         notes: data.notes || null,
         expirationDate,
+        termsAcceptedAt: new Date(),
         ...(data.familyMembers && data.familyMembers.length > 0
           ? { familyMembers: { create: buildFamilyCreate(data.familyMembers) } }
           : {}),

@@ -59,6 +59,11 @@ export const registerValidator = [
     .withMessage('ZIP code is required')
     .matches(/^\d{5}(-\d{4})?$/)
     .withMessage('Please provide a valid ZIP code'),
+  body('termsAccepted')
+    .notEmpty()
+    .withMessage('You must accept the terms and conditions')
+    .equals('true')
+    .withMessage('You must accept the terms and conditions'),
 ];
 
 export const loginValidator = [
